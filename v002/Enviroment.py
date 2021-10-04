@@ -228,6 +228,7 @@ class Enviroment:
 
     def _clear_plot(self):
         if i_am_in_interatcive:
+            from IPython import display
             display.display(pl.gcf())
             display.clear_output(wait=True)
         else:
