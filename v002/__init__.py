@@ -5,6 +5,7 @@ try:
         from IPython import display
         i_am_in_interatcive = True
         import pylab as pl
+        pl.rcParams['figure.figsize'] = [13, 13]
         print("INTERACTIVE")
     else:
         import matplotlib.pyplot as pl
