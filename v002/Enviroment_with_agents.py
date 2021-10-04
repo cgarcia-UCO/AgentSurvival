@@ -188,6 +188,12 @@ class Enviroment_with_agents(Enviroment):
 
             return inner
 
+        def _and_plot(f):
+            def inner(self):
+                f(self)
+                self.__laberinth.plot(clear=True,time_interval=self.__laberinth.time_interval)
+            return inner
+
         def _protected_move(f):
             def inner(self):
                 if self.__num_moves < self.__laberinth._max_moves_per_turn:
@@ -323,6 +329,7 @@ class Enviroment_with_agents(Enviroment):
         @_die_protected
         @_protected_move
         @_consuming_move
+        @_and_plot
         def _move_forward_agent(self):
 
             x, y, orientation = self.__position[0], self.__position[1], self.__orientation
