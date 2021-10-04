@@ -203,7 +203,8 @@ class Enviroment:
         if self.show_construction:
             self.plot()
             if i_am_in_interatcive:
-                display.display(pl.gcf())
+                from IPython import display;
+                display.display(pl.gcf());
             else:
                 pl.ion()
                 pl.show()
@@ -219,9 +220,10 @@ class Enviroment:
 
     def _show_plot(self, time_interval = 0.01):
         if i_am_in_interatcive:
-            from IPython import display
-            display.display(pl.gcf())
-            time.sleep(time_interval)
+            from IPython import display;
+            fig = pl.gcf();
+            _ = display.display(fig);
+            time.sleep(time_interval);
         else:
             pl.ion()
             pl.pause(time_interval)
@@ -229,15 +231,17 @@ class Enviroment:
 
     def _clear_plot(self):
         if i_am_in_interatcive:
-            from IPython import display
-            display.display(pl.gcf())
-            display.clear_output(wait=True)
+            _ = pl.clf();
+            from IPython import display;
+            fig = pl.gcf();
+            _ = display.display(fig);
+            _ = display.clear_output(wait=True);
         else:
             if pl.isinteractive():
                 pl.ion()
             else:
                 pl.ioff()
-        pl.clf()
+            pl.clf()
 
     def plot(self, clear=True):
 
@@ -268,9 +272,10 @@ class Enviroment:
             buf.seek(0)
             self.previous_lab_image = buf
         else:
-            ax = pl.gca()
+            ax = pl.gca();
             im = Image.open(self.previous_lab_image)
-            ax.imshow(im, extent=[0, self._size[1], 0, self._size[0]])
+            ax.imshow(im, extent=[0, self._size[1], 0, self._size[0]]);
+            pass
 
         # ts3 = datetime.now()
         if clear:
