@@ -1,7 +1,7 @@
 try:
     from IPython import get_ipython
 
-    if get_ipython().__class__.__name__ != 'NoneType':
+    if get_ipython().__class__.__name__ not in ['NoneType', 'Shell']:
         from IPython import display
         i_am_in_interatcive = True
         import pylab as pl
