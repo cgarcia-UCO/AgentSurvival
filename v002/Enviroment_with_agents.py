@@ -23,6 +23,7 @@ TODO Llevar todo a un Google Colab para el alumnado
 '''
 import ctypes
 import datetime
+import time
 from string import ascii_lowercase
 from abc import ABC, abstractmethod
 
@@ -461,8 +462,8 @@ class Enviroment_with_agents(Enviroment):
                 for kk in self.__objects[ii][jj]:
                     kk.plot()
 
-        pl.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        pl.gca().autoscale()
+        pl.legend(loc='center left', bbox_to_anchor=(1, 0.5));
+        pl.gca().autoscale();
         if clear:
             self._show_plot(time_interval=time_interval)
 
