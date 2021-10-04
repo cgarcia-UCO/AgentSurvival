@@ -221,6 +221,7 @@ class Enviroment:
     def _show_plot(self, time_interval = 0.01):
         if i_am_in_interatcive:
             from IPython import display;
+            pl.rcParams['figure.figsize'] = [13, 13]
             fig = pl.gcf();
             _ = display.display(fig);
             time.sleep(time_interval);
