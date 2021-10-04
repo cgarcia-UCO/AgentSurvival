@@ -224,6 +224,7 @@ class Enviroment:
             fig = pl.gcf();
             _ = display.display(fig);
             time.sleep(time_interval);
+            print(pl.rcParams['figure.figsize'])
         else:
             pl.ion()
             pl.pause(time_interval)
