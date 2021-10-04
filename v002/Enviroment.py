@@ -219,6 +219,7 @@ class Enviroment:
 
     def _show_plot(self, time_interval = 0.01):
         if i_am_in_interatcive:
+            from IPython import display
             display.display(pl.gcf())
             time.sleep(time_interval)
         else:
