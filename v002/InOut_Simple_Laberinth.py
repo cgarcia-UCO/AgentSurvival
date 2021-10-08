@@ -30,9 +30,6 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                 hiden_agent._should_stop = True
                 hiden_agent._send_message({'type': 'success laberinth',
                                            'Description': 'You exited from the laberinth'})
-                print("LO CONSEGUISTE!!")
-                print("DESEAS PROBAR EL SIGUIENTE NIVEL?")
-                print("https://colab.research.google.com/drive/1zmRNivRtv0jrcXf27d0nBFlNOwpxMtje?usp=sharing")
 
         def plot(self):
             pl.plot(self._pos_x + 0.5, self._pos_y + 0.5, 'ro') #punto rojo
