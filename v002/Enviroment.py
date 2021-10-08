@@ -168,17 +168,17 @@ class Enviroment:
         changing_cell = np.asarray([selected_cell,selected_neigh_cell]).min(axis=0)
 
         if selected_cell[0] == selected_neigh_cell[0]: #v_panel
-            self.__v_panels[changing_cell[0], changing_cell[1]] = 0
+            self._v_panels[changing_cell[0], changing_cell[1]] = 0
         else: #h_panel
-            self.__h_panels[changing_cell[0], changing_cell[1]] = 0
+            self._h_panels[changing_cell[0], changing_cell[1]] = 0
 
     def __init__(self, size, no_adjacents_in_cluster = False,
                  show_construction = False):#,
                  # entry_at_border = True,
                  # treasure_at_border = True):
         self._size = (size, size)
-        self.__h_panels = []
-        self.__v_panels = []
+        self._h_panels = []
+        self._v_panels = []
         self.no_adjacents_in_cluster = no_adjacents_in_cluster
         self.show_construction = show_construction
         # self.entry_at_border = entry_at_border
@@ -199,8 +199,8 @@ class Enviroment:
         # self.start_cell = tuple(self.start_cell)
         # self.treasure = tuple(self.treasure)
 
-        self.__h_panels = np.ones(self._size)
-        self.__v_panels = np.ones(self._size)
+        self._h_panels = np.ones(self._size)
+        self._v_panels = np.ones(self._size)
 
         self.all_clusters, self.all_cells, self.cells_2_clusters = self._initClusters()
 
@@ -267,9 +267,9 @@ class Enviroment:
 
             for i_1,i in zip(range(self._size[0]), range(1, self._size[0] + 1)):
                 for j_1,j in zip(range(self._size[1]), range(1, self._size[1] + 1)):
-                    if self.__h_panels[i_1, j_1] == 1:
+                    if self._h_panels[i_1, j_1] == 1:
                         pl.plot([j,j-1],[i,i], color='blue')
-                    if self.__v_panels[i_1, j_1] == 1:
+                    if self._v_panels[i_1, j_1] == 1:
                         pl.plot([j,j],[i-1,i],color='blue')
 
             # pl.plot(self.start_cell[1] + 0.5, self.start_cell[0] + 0.5, 'go') #punto verde
@@ -294,7 +294,7 @@ class Enviroment:
 
 
     def _top_panel_at(self, x, y):
-        return self.__h_panels[x,y]
+        return self._h_panels[x, y]
 
     def _east_panel_at(self, x, y):
-        return self.__v_panels[x,y]
+        return self._v_panels[x, y]

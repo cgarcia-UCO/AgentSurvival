@@ -34,7 +34,7 @@ from matplotlib import image as mpimg
 from matplotlib.image import NonUniformImage
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
-from v002.Agent import Agent
+from v002.Agent import Agent, create_agent
 from v002.Enviroment import Orientation, OrientationException, Enviroment, TooMuchMovesPerTurn
 import v002.Enviroment
 from scipy import ndimage
@@ -172,6 +172,7 @@ class Enviroment_with_agents(Enviroment):
             self.__my_avatar[Orientation.LEFT] = ndimage.rotate(self.__my_avatar[Orientation.UP],90)
             self.__my_avatar[Orientation.RIGHT] = ndimage.rotate(self.__my_avatar[Orientation.UP],270)
             self._life = life
+            self._should_stop = False
             self._messages = []
             self._cmap = cmap
             self._color = color
@@ -217,11 +218,11 @@ class Enviroment_with_agents(Enviroment):
             return inner
 
         def _is_alive(self):
-            return self._life > 0
+            return self._life > 0 and not self._should_stop
 
         def _die_protected(f):
             def inner(self,*args, **kwargs):
-                if self._life > 0:
+                if self._is_alive():
                     return f(self,*args, **kwargs)
             return inner
 
@@ -459,8 +460,9 @@ class Enviroment_with_agents(Enviroment):
 
         return new_name
 
-    def create_agent(self, name, agent_class, pos_x = None, pos_y = None,
+    def create_agent(self, name, move_method, pos_x = None, pos_y = None,
                      orientation=None, life=None):
+        agent_class = create_agent(move_method)
         if issubclass(agent_class, Agent):
             id = self.__random_name()
             if pos_x is None:
@@ -490,7 +492,7 @@ class Enviroment_with_agents(Enviroment):
         else:
             return None
 
-    def plot(self, clear=True, time_interval = 0.01, length_path=-1):
+    def plot(self, clear=True, time_interval = 0.01, length_path=-10):
         if clear:
             self._clear_plot()
 
@@ -510,8 +512,15 @@ class Enviroment_with_agents(Enviroment):
         if clear:
             self._show_plot(time_interval=time_interval)
 
+    def stop_condition(self):
+        return len(self.__living_agent_ids) <= 1
+
     def run(self, time_interval=0.01):
-        while len(self.__living_agent_ids) > 1:
+
+        self._epoch = 0
+
+        while not self.stop_condition():
+            self._epoch += 1
         # for _ in range(1000):
             for i in self.__hidden_agents:
                 an_agent = self.__hidden_agents[i]

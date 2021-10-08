@@ -6,18 +6,19 @@ try:
         i_am_in_interatcive = True
         import pylab as pl
         pl.rcParams['figure.figsize'] = [13, 13]
-        print("INTERACTIVE")
+        # print("INTERACTIVE")
     else:
         import matplotlib.pyplot as pl
         i_am_in_interatcive = False
-        print("NOT INTERACTIVE")
+        # print("NOT INTERACTIVE")
 except:
     import matplotlib.pyplot as pl
     i_am_in_interatcive = False
 
-print("__INIT__ EXECUTED")
+# print("__INIT__ EXECUTED")
 
 from .Agent import Agent
 from .Enviroment_with_agents import Enviroment_with_agents
 from .Enviroment import Enviroment
+from .InOut_Simple_Laberinth import InOut_Simple_Laberinth, No_Walls_Laberinth
 import numpy as np

@@ -25,10 +25,13 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
             position = hiden_agent._get_position()
             if position[1] == self._pos_x and \
                     position[0] == self._pos_y:
-                hiden_agent._life = 0
-                self._environment._dying_agents.add(self._environment._Enviroment_with_agents__outer_agent_ids[agent])
+                self._environment._exit_found = True
+                hiden_agent._should_stop = True
                 hiden_agent._send_message({'type': 'success laberinth',
                                            'Description': 'You exited from the laberinth'})
+                print("LO CONSEGUISTE!!")
+                print("DESEAS PROBAR EL SIGUIENTE NIVEL?")
+                print("https://colab.research.google.com/drive/1zmRNivRtv0jrcXf27d0nBFlNOwpxMtje?usp=sharing")
 
         def plot(self):
             pl.plot(self._pos_x + 0.5, self._pos_y + 0.5, 'ro') #punto rojo
@@ -57,6 +60,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
         self._entry_at_border = entry_at_border
         self._exit_at_border = exit_at_border
         self._start_orientation = Orientation.UP
+        self._exit_found = False
 
         pos_x = np.random.randint(self._size[0])
         pos_y = np.random.randint(self._size[1])
@@ -92,6 +96,9 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
         exit = self._Exit(pos_x, pos_y, self)
         self.addObject(exit, pos_x, pos_y)
 
+    def stop_condition(self):
+        return (self._epoch > 10 * self._size[0] * self._size[1]) or self._exit_found
+
     def create_agent(self, name, agent_class):
         life = 10000
         super().create_agent(name, agent_class,
@@ -102,3 +109,14 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
 
     def plot(self, clear=True, time_interval=0.01):
         super().plot(clear, time_interval, None)
+
+class No_Walls_Laberinth(InOut_Simple_Laberinth):
+    def __init__(self, size):
+        super().__init__(size, entry_at_border=False, exit_at_border=False)
+        self._h_panels = np.zeros(self._size)
+        self._v_panels = np.zeros(self._size)
+        self._h_panels[self._size[0]-1,:] = 1
+        self._v_panels[:,self._size[1]-1] = 1
+
+    def _initClusters(self):
+        return [], None, None
