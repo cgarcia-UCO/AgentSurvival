@@ -26,6 +26,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
             if position[1] == self._pos_x and \
                     position[0] == self._pos_y:
                 self._environment._exit_found = True
+                self._environment._winner = agent
                 hiden_agent._should_stop = True
                 hiden_agent._send_message({'type': 'success laberinth',
                                            'Description': 'You exited from the laberinth'})
@@ -46,7 +47,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                     'exit_function': self._exit}
 
 
-    def __init__(self, size, entry_at_border=True, exit_at_border=True):
+    def __init__(self, size, entry_at_border=True, exit_at_border=True, plot_run='every epoch'):
         moves_per_turn = 10*size*size
         super().__init__(size, max_moves_per_turn=moves_per_turn,
                          no_adjacents_in_cluster = False,
@@ -55,7 +56,8 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                          # treasure_at_border = True,
                          food_ratio = 0.,
                          food_period = 100000,
-                         move_protection = False)
+                         move_protection = False,
+                         plot_run=plot_run)
 
         self._entry_at_border = entry_at_border
         self._exit_at_border = exit_at_border
@@ -97,7 +99,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
         self.addObject(exit, pos_x, pos_y)
 
     def stop_condition(self):
-        return (self._epoch > 10 * self._size[0] * self._size[1]) or self._exit_found
+        return len(self._Enviroment_with_agents__living_agent_ids) <= 0 or self._exit_found #(self._epoch > 10 * self._size[0] * self._size[1]) or self._exit_found
 
     def create_agent(self, name, agent_class):
         life = 10000
@@ -111,8 +113,9 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
         super().plot(clear, time_interval, None)
 
 class No_Walls_Laberinth(InOut_Simple_Laberinth):
-    def __init__(self, size):
-        super().__init__(size, entry_at_border=False, exit_at_border=False)
+    def __init__(self, size, plot_run = 'every epoch'):
+        super().__init__(size, entry_at_border=False, exit_at_border=False,
+                         plot_run=plot_run)
         self._h_panels = np.zeros(self._size)
         self._v_panels = np.zeros(self._size)
         self._h_panels[self._size[0]-1,:] = 1

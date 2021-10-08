@@ -218,21 +218,27 @@ def test_xAgents(x):
     lb1.run(0.1)
 
 def test_inOutLaberinth():
-    lb1 = InOut_Simple_Laberinth(10)
+    lb1 = InOut_Simple_Laberinth(10, plot_run='never')
 
     x = 1
-    lb1.create_agent('do nothing', do_nothing)
+    # lb1.create_agent('do nothing', do_nothing)
 
     for i in range(x):
         # lb1.create_agent('silly' + str(i+1), move_silly)
         lb1.create_agent('yo' + str(i + 1), exit_from_laberinth)
-    lb1.run(0.1)
+    winner = lb1.run(0.1)
 
-def test_emptyLaberint():
-    lb1 = No_Walls_Laberinth(10)
+    if winner is not None:
+        print("There was a winner")
+
+def test_emptyLaberinth():
+    lb1 = No_Walls_Laberinth(10, plot_run='never')
 
     lb1.create_agent('yo', exit_from_laberinth)
-    lb1.run(0.1)
+    winner = lb1.run(0.1)
+
+    if winner is not None:
+        print("There was a winner")
 
 if __name__ == '__main__':
         #np.random.seed(123456)
@@ -241,8 +247,8 @@ if __name__ == '__main__':
         # test_xAgents(10)
 
 
-        # test_inOutLaberinth()
+        test_inOutLaberinth()
 
-        test_emptyLaberint()
+        # test_emptyLaberinth()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

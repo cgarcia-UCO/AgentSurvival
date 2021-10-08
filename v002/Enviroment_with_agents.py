@@ -200,7 +200,7 @@ class Enviroment_with_agents(Enviroment):
                 f(self)
 
                 # No puedo imprimir si es una hebra diferente
-                if not self.__laberinth._Enviroment_with_agents__move_protection:
+                if self.__laberinth._plot_run == 'always' and not self.__laberinth._Enviroment_with_agents__move_protection:
                     self.__laberinth.plot(clear=True)
             return inner
 
@@ -396,7 +396,8 @@ class Enviroment_with_agents(Enviroment):
                  # treasure_at_border = True,
                  food_ratio = 0.05,
                  food_period = 10,
-                 move_protection = True):
+                 move_protection = True,
+                 plot_run = 'every epoch'):
         super().__init__(size, no_adjacents_in_cluster, show_construction)
             # , entry_at_border,
             #      treasure_at_border)
@@ -408,6 +409,7 @@ class Enviroment_with_agents(Enviroment):
         self.__objects_pointers = set()
         self.__living_agent_ids = set()
         self.__move_protection = move_protection
+        self._winner = None
         self.__posible_cmaps = [
             'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
             'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
@@ -418,6 +420,7 @@ class Enviroment_with_agents(Enviroment):
                                  'tab:brown','tab:pink',
                                  'tab:gray','tab:olive',
                                  'tab:cyan']
+        self._plot_run = plot_run
 
         for i in range(self._size[0]):
             self.__objects[i] = {}
@@ -515,6 +518,9 @@ class Enviroment_with_agents(Enviroment):
     def stop_condition(self):
         return len(self.__living_agent_ids) <= 1
 
+    def get_winner(self):
+        return self._winner
+
     def run(self, time_interval=0.01):
 
         self._epoch = 0
@@ -581,9 +587,13 @@ class Enviroment_with_agents(Enviroment):
                     for kk in self.__objects[ii][jj]:
                         kk._notify_time_iteration()
 
-            self.plot(clear=True,time_interval=time_interval)
+            if self._plot_run == 'every epoch':
+                self.plot(clear=True,time_interval=time_interval)
 
-        pl.ioff()
-        self._clear_plot()
-        self.plot(clear=False,time_interval=time_interval)
-        pl.show()
+        if not self._plot_run == 'never':
+            pl.ioff()
+            self._clear_plot()
+            self.plot(clear=False,time_interval=time_interval)
+            pl.show()
+
+        return self.get_winner()
