@@ -31,6 +31,8 @@ class Orientation(IntEnum):
 class OrientationException(Exception):
     pass
 
+class TooMuchMovesPerTurn(Exception):
+    pass
 
 '''
 Clase que crea laberintos. Se pueden especificar si puede haber más de un camino o no y si las entradas y salidas
@@ -170,30 +172,32 @@ class Enviroment:
         else: #h_panel
             self.__h_panels[changing_cell[0], changing_cell[1]] = 0
 
-    def __init__(self, size, no_adjacents_in_cluster = False, show_construction = False, entry_at_border = True,
-                 treasure_at_border = True):
+    def __init__(self, size, no_adjacents_in_cluster = False,
+                 show_construction = False):#,
+                 # entry_at_border = True,
+                 # treasure_at_border = True):
         self._size = (size, size)
         self.__h_panels = []
         self.__v_panels = []
         self.no_adjacents_in_cluster = no_adjacents_in_cluster
         self.show_construction = show_construction
-        self.entry_at_border = entry_at_border
-        self.treasure_at_border = treasure_at_border
+        # self.entry_at_border = entry_at_border
+        # self.treasure_at_border = treasure_at_border
         self.previous_lab_image = None
 
-        self.start_cell = [np.random.randint(self._size[0]), np.random.randint(self._size[1])]
-        self.treasure = [np.random.randint(self._size[0]), np.random.randint(self._size[1])]
+        # self.start_cell = [np.random.randint(self._size[0]), np.random.randint(self._size[1])]
+        # self.treasure = [np.random.randint(self._size[0]), np.random.randint(self._size[1])]
 
-        if self.entry_at_border:
-            axis = np.random.choice([0,1])
-            self.start_cell[axis] = np.random.choice([0, self._size[axis] - 1])
+        # if self.entry_at_border:
+        #     axis = np.random.choice([0,1])
+        #     self.start_cell[axis] = np.random.choice([0, self._size[axis] - 1])
+        #
+        # if self.treasure_at_border:
+        #     axis = np.random.choice([0, 1])
+        #     self.treasure[axis] = np.random.choice([0, self._size[axis] - 1])
 
-        if self.treasure_at_border:
-            axis = np.random.choice([0, 1])
-            self.treasure[axis] = np.random.choice([0, self._size[axis] - 1])
-
-        self.start_cell = tuple(self.start_cell)
-        self.treasure = tuple(self.treasure)
+        # self.start_cell = tuple(self.start_cell)
+        # self.treasure = tuple(self.treasure)
 
         self.__h_panels = np.ones(self._size)
         self.__v_panels = np.ones(self._size)
@@ -268,8 +272,8 @@ class Enviroment:
                     if self.__v_panels[i_1, j_1] == 1:
                         pl.plot([j,j],[i-1,i],color='blue')
 
-            pl.plot(self.start_cell[1] + 0.5, self.start_cell[0] + 0.5, 'go') #punto verde
-            pl.plot(self.treasure[1] + 0.5, self.treasure[0] + 0.5, 'ro') #punto rojo
+            # pl.plot(self.start_cell[1] + 0.5, self.start_cell[0] + 0.5, 'go') #punto verde
+            # pl.plot(self.treasure[1] + 0.5, self.treasure[0] + 0.5, 'ro') #punto rojo
             buf = io.BytesIO()
             pl.savefig(buf, format='png', bbox_inches='tight', pad_inches=0)
             buf.seek(0)

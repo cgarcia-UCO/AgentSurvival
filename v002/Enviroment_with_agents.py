@@ -35,7 +35,7 @@ from matplotlib.image import NonUniformImage
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
 from v002.Agent import Agent
-from v002.Enviroment import Orientation, OrientationException, Enviroment
+from v002.Enviroment import Orientation, OrientationException, Enviroment, TooMuchMovesPerTurn
 import v002.Enviroment
 from scipy import ndimage
 import threading
@@ -48,7 +48,8 @@ class thread_with_exception(threading.Thread):
     def run(self):
         try:
             self.f()
-        except:
+        except Exception as e:
+            print( str(e))
             pass
 
     def get_id(self):
@@ -85,7 +86,7 @@ except:
 
 class Enviroment_with_agents(Enviroment):
 
-    class __Object(ABC):
+    class _Object(ABC):
         def __init__(self, pos_x, pos_y, environment):
             self._pos_x = pos_x
             self._pos_y = pos_y
@@ -99,7 +100,10 @@ class Enviroment_with_agents(Enviroment):
         def plot(self):
             pass
 
-    class __Food(__Object):
+        def _notify_time_iteration(self):
+            pass
+
+    class __Food(_Object):
         def __init__(self, pos_x, pos_y, period, environment):
             super().__init__(pos_x, pos_y, environment)
             self._period = period
@@ -123,6 +127,8 @@ class Enviroment_with_agents(Enviroment):
                                 extent=[self._pos_x + 0.2, self._pos_x + 0.8,
                                         self._pos_y + 0.2, self._pos_y + 0.8])
 
+        # TODO modificar para que eat vaya disminuyendo una unidad y consuma movimientos, no vida
+        # TODO cómo hacer para que una función de aquí se proteja con métodos de HiddenAgent
         def _eat(self, agent):
             hiden_agent = self._environment._Enviroment_with_agents__get_hidden_agent(agent, self)
             position = hiden_agent._get_position()
@@ -191,7 +197,10 @@ class Enviroment_with_agents(Enviroment):
         def _and_plot(f):
             def inner(self):
                 f(self)
-                self.__laberinth.plot(clear=True,time_interval=self.__laberinth.time_interval)
+
+                # No puedo imprimir si es una hebra diferente
+                if not self.__laberinth._Enviroment_with_agents__move_protection:
+                    self.__laberinth.plot(clear=True)
             return inner
 
         def _protected_move(f):
@@ -203,6 +212,7 @@ class Enviroment_with_agents(Enviroment):
                 else:
                     self._send_message({'type':'too much moves', 'Description': 'You have tried to do more moves than allowed per turn'})
                     # print("Too much moves per turn")
+                    raise TooMuchMovesPerTurn()
 
             return inner
 
@@ -218,14 +228,18 @@ class Enviroment_with_agents(Enviroment):
         def _update_path(self):
             self.__path.append(tuple([self.__position[0] + 0.5, self.__position[1] + 0.5]))
 
-        def plot(self):
+        def plot(self, length_path = -10):
             path_x = [j[1] for j in self.__path]
             path_y = [j[0] for j in self.__path]
             if self._life > 0:
                 label = self.__name + ' ' + str(self._life)
             else:
                 label = self.__name + ' died'
-            pl.plot(path_x[-10:], path_y[-10:], color=self._color)
+
+            if length_path is not None:
+                pl.plot(path_x[length_path:], path_y[length_path:], color=self._color)
+            else:
+                pl.plot(path_x, path_y, color=self._color)
             pl.plot(self.__position[1] + 0.5, self.__position[0] + 0.5, label= label, color=self._color)  # punto verde
             #Avatars from: https://www.publicdomainpictures.net/en/view-image.php?image=70648&picture=avatars
 
@@ -347,8 +361,10 @@ class Enviroment_with_agents(Enviroment):
                     raise OrientationException(orientation)
 
                 self.__path.append(tuple([self.__position[0]+0.5,self.__position[1]+0.5]))
+            else:
+                self._send_message({'type': 'hit the wall',
+                                    'Description': 'You have tried to move forward, but there is a wall.'})
 
-        @_die_protected
         def _whats_here(self):
             x, y = self.__position[1], self.__position[0]
             laberinth = self.__laberinth
@@ -366,17 +382,23 @@ class Enviroment_with_agents(Enviroment):
             self._life -= value
             self._send_message({'type': 'passing time', 'Description': 'Time passes by and you loss life', 'amount': 1})
 
-        @_die_protected
         def _read_messages(self):
             messages = self._messages.copy()
             self._messages.clear()
             return messages
 
 
-    def __init__(self, size, max_moves_per_turn, no_adjacents_in_cluster = False, show_construction = False, entry_at_border = True,
-                 treasure_at_border = True, food_ratio = 0.05, food_period = 10):
-        super().__init__(size, no_adjacents_in_cluster, show_construction, entry_at_border,
-                 treasure_at_border)
+    def __init__(self, size, max_moves_per_turn = 7,
+                 no_adjacents_in_cluster = False,
+                 show_construction = False,
+                 # entry_at_border = True,
+                 # treasure_at_border = True,
+                 food_ratio = 0.05,
+                 food_period = 10,
+                 move_protection = True):
+        super().__init__(size, no_adjacents_in_cluster, show_construction)
+            # , entry_at_border,
+            #      treasure_at_border)
         self.__hidden_agents = {}
         self.__outer_agents = {}
         self.__outer_agent_ids = {}
@@ -384,6 +406,7 @@ class Enviroment_with_agents(Enviroment):
         self.__objects = {}
         self.__objects_pointers = set()
         self.__living_agent_ids = set()
+        self.__move_protection = move_protection
         self.__posible_cmaps = [
             'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
             'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
@@ -405,12 +428,16 @@ class Enviroment_with_agents(Enviroment):
                     self.__objects_pointers.add(new_object)
                     self.__objects[i][j].append(new_object)
 
+    def addObject(self, object, pos_x, pos_y):
+        self.__objects_pointers.add(object)
+        self.__objects[pos_x][pos_y].append(object)
+
     '''
     En esta función, he introducido el parámetro who_ask para intentar evitar que algún agente intente
     localizar su representación interna en el laberinto
     '''
     def __get_hidden_agent(self, agent, who_ask):
-        if isinstance(who_ask, self.__Object) and who_ask in self.__objects_pointers:
+        if isinstance(who_ask, self._Object) and who_ask in self.__objects_pointers:
             id = self.__outer_agent_ids[agent]
             return self.__hidden_agents[id]
 
@@ -432,12 +459,21 @@ class Enviroment_with_agents(Enviroment):
 
         return new_name
 
-    def create_agent(self, name, agent_class):
+    def create_agent(self, name, agent_class, pos_x = None, pos_y = None,
+                     orientation=None, life=None):
         if issubclass(agent_class, Agent):
             id = self.__random_name()
-            an_agent = self.__Hidden_Agent(name, self, np.random.randint(self._size[0]), np.random.randint(self._size[1]),
-                                           Orientation.UP,
-                                           life= self._size[0] * self._size[1], cmap=self.__posible_cmaps[len(self.__hidden_agents)],
+            if pos_x is None:
+                pos_x = np.random.randint(self._size[0])
+            if pos_y is None:
+                pos_y = np.random.randint(self._size[1])
+            if orientation is None:
+                orientation = Orientation.UP
+            if life is None:
+                life = self._size[0] * self._size[1]
+            an_agent = self.__Hidden_Agent(name, self, pos_x, pos_y,
+                                           orientation=orientation,
+                                           life= life, cmap=self.__posible_cmaps[len(self.__hidden_agents)],
                                            color=self.__possible_colors[len(self.__hidden_agents)])
             self.__hidden_agents[id] = an_agent
             new_agent = agent_class(
@@ -454,7 +490,7 @@ class Enviroment_with_agents(Enviroment):
         else:
             return None
 
-    def plot(self, clear=True, time_interval = 0.01):
+    def plot(self, clear=True, time_interval = 0.01, length_path=-1):
         if clear:
             self._clear_plot()
 
@@ -462,7 +498,7 @@ class Enviroment_with_agents(Enviroment):
 
         for ii in self.__hidden_agents:
             i = self.__hidden_agents[ii]
-            i.plot()
+            i.plot(length_path)
 
         for ii in self.__objects:
             for jj in self.__objects[ii]:
@@ -481,42 +517,55 @@ class Enviroment_with_agents(Enviroment):
                 an_agent = self.__hidden_agents[i]
                 an_agent._update_path()
 
-            dying_agents = set()
+            self._dying_agents = set()
             for i in self.__living_agent_ids:
                 an_agent = self.__hidden_agents[i]
                 an_agent._reset_moves()
                 an_agent._decrease_life(1)
 
                 if not an_agent._is_alive():
-                    dying_agents.add(i)
+                    self._dying_agents.add(i)
 
-            for i in dying_agents:
+            for i in self._dying_agents:
                 self.__living_agent_ids.remove(i)
 
-            # for i in self.__outer_agents:
-            for i in self.__living_agent_ids:
-                an_agent = self.__outer_agents[i]
+            self._dying_agents = set()
 
-                # Movimiento del agente protegido frente a bucles infinitos
-                # debe tardar menos de X segundos. El test que me ha funcionado en move es el siguiente, que lo corta la excepción
-                # def move(self):
-                #     for i in range(50):
-                #         time.sleep(0.1)
-                #     self.move_randomly()
+            if self.__move_protection:
+                for i in self.__living_agent_ids:
+                    an_agent = self.__outer_agents[i]
 
-                X = 2
-                t1 = thread_with_exception(an_agent.move)
-                # time1 = datetime.datetime.now()
-                t1.start()
-                t1.join(X)
-                if t1.is_alive():
-                    t1.raise_exception()
-                    t1.join()
-                    self.__hidden_agents[i]._send_message({'type': 'too slow',
-                                                           'Description': 'You are expected to make moves before ' +
-                                                           str(X) + ' seconds'})
-                # time2 = datetime.datetime.now()
-                # print(time2-time1)
+                    # Movimiento del agente protegido frente a bucles infinitos
+                    # debe tardar menos de X segundos. El test que me ha funcionado en move es el siguiente, que lo corta la excepción
+                    # def move(self):
+                    #     for i in range(50):
+                    #         time.sleep(0.1)
+                    #     self.move_randomly()
+
+                    X = 1 #TODO no puedo pintar tras cada movimiento y tener hebras
+                    t1 = thread_with_exception(an_agent.move)
+                    # time1 = datetime.datetime.now()
+                    t1.start()
+                    t1.join(X)
+                    if t1.is_alive():
+                        t1.raise_exception()
+                        t1.join()
+                        self.__hidden_agents[i]._send_message({'type': 'too slow',
+                                                               'Description': 'You are expected to make moves before ' +
+                                                               str(X) + ' seconds'})
+
+                    # time2 = datetime.datetime.now()
+                    # print(time2-time1)
+            else:
+                for i in self.__living_agent_ids:
+                    an_agent = self.__outer_agents[i]
+                    try:
+                        an_agent.move()
+                    except Exception as e:
+                        print(e)
+
+            for i in self._dying_agents:
+                self.__living_agent_ids.remove(i)
 
             for ii in self.__objects:
                 for jj in self.__objects[ii]:

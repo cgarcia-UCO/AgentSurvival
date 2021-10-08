@@ -24,6 +24,12 @@ class Agent(ABC):
     def move_forward(self):
         self.__move_forward_function()
 
+    def read_messages(self):
+        return self._read_messages_function()
+
+    def whats_here(self):
+        return self._whats_here_function()
+
     @abstractmethod
     def move(self):
         pass

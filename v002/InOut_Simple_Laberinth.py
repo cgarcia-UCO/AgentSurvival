@@ -25,7 +25,8 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
             position = hiden_agent._get_position()
             if position[1] == self._pos_x and \
                     position[0] == self._pos_y:
-                self._environment._Enviroment_with_agents__living_agent_ids.remove(self._environment._Enviroment_with_agents__outer_agent_ids[agent])
+                hiden_agent._life = 0
+                self._environment._dying_agents.add(self._environment._Enviroment_with_agents__outer_agent_ids[agent])
                 hiden_agent._send_message({'type': 'success laberinth',
                                            'Description': 'You exited from the laberinth'})
 
@@ -72,6 +73,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                 pos_y = np.random.choice([0, self._size[axis] - 1])
                 if pos_y == 0:
                     self._start_orientation = Orientation.UP
+                else:
                     self._start_orientation = Orientation.DOWN
 
         self.entry = self._Entry(pos_x, pos_y, self)
@@ -91,10 +93,12 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
         self.addObject(exit, pos_x, pos_y)
 
     def create_agent(self, name, agent_class):
+        life = 10000
         super().create_agent(name, agent_class,
                              self.entry._pos_y,
                              self.entry._pos_x,
-                             self._start_orientation)
+                             self._start_orientation,
+                             life)
 
     def plot(self, clear=True, time_interval=0.01):
         super().plot(clear, time_interval, None)
