@@ -22,7 +22,7 @@ TODO podríamos definir también el de llegar a un punto destino conocido (A*, o
 TODO Llevar todo a un Google Colab para el alumnado
 '''
 import ctypes
-import datetime
+from datetime import datetime
 import time
 from string import ascii_lowercase
 from abc import ABC, abstractmethod
@@ -40,34 +40,37 @@ import v002.Enviroment
 from scipy import ndimage
 import threading
 
-class thread_with_exception(threading.Thread):
-    def __init__(self, f):
-        threading.Thread.__init__(self)
-        self.f = f
-
-    def run(self):
-        try:
-            self.f()
-        except Exception as e:
-            print( str(e))
-            pass
-
-    def get_id(self):
-
-        # returns id of the respective thread
-        if hasattr(self, '_thread_id'):
-            return self._thread_id
-        for id, thread in threading._active.items():
-            if thread is self:
-                return id
-
-    def raise_exception(self):
-        thread_id = self.get_id()
-        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(thread_id),
-                                                         ctypes.py_object(SystemExit))
-        if res > 1:
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
-            print('Exception raise failure')
+# class thread_with_exception(threading.Thread):
+#     def __init__(self, f, maxTime, intervalTime, parent_thread_id):
+#         threading.Thread.__init__(self)
+#         self.f = f
+#         self.maxTime = maxTime
+#         self.intervalTime = intervalTime
+#         self.parent_thread_id = parent_thread_id
+#
+#     def run(self):
+#         try:
+#             self.f()
+#         except Exception as e:
+#             print( str(e))
+#             pass
+#
+#     def get_id(self):
+#
+#         # returns id of the respective thread
+#         if hasattr(self, '_thread_id'):
+#             return self._thread_id
+#         for id, thread in threading._active.items():
+#             if thread is self:
+#                 return id
+#
+#     def raise_exception(self):
+#         thread_id = self.get_id()
+#         res = ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(thread_id),
+#                                                          ctypes.py_object(SystemExit))
+#         if res > 1:
+#             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
+#             print('Exception raise failure')
 
 try:
     from IPython import get_ipython
@@ -82,6 +85,41 @@ try:
 except:
     import matplotlib.pyplot as pl
     i_am_in_interatcive = False
+
+def sleeper(maxTime, intervalTime, notify_thread_id):
+
+    try:
+        now = datetime.now()
+        init_time = now
+
+        while (now - init_time).seconds < maxTime:
+            time.sleep(intervalTime)
+            now = datetime.now()
+
+        ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(notify_thread_id),
+                                                         ctypes.py_object(SystemExit))
+    except:
+        # print("TIMER has been killed")
+        pass
+
+def protect_inf_loop(f, maxTime, intervalTime):
+    my_id = threading.current_thread().ident
+    t1 = threading.Thread(target=sleeper, args=(maxTime, intervalTime, my_id))
+    t1.start()
+    try:
+        f()
+        t1.join(intervalTime)
+        if t1.is_alive():
+            # t1.raise_exception()
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(t1.ident),
+                                                       ctypes.py_object(SystemExit))
+            t1.join()
+
+        time.sleep(2 * intervalTime)
+    except:
+        # print('PARENT HAS BEEN KILLED')
+        pass
+
 
 
 class Enviroment_with_agents(Enviroment):
@@ -200,7 +238,7 @@ class Enviroment_with_agents(Enviroment):
                 f(self)
 
                 # No puedo imprimir si es una hebra diferente
-                if self.__laberinth._plot_run == 'always' and not self.__laberinth._Enviroment_with_agents__move_protection:
+                if self.__laberinth._plot_run == 'always':# and not self.__laberinth._Enviroment_with_agents__move_protection:
                     self.__laberinth.plot(clear=True)
             return inner
 
@@ -331,10 +369,12 @@ class Enviroment_with_agents(Enviroment):
                 raise OrientationException(orientation)
 
         @_die_protected
+        @_and_plot
         def _turn_right_agent(self):
             self.__orientation = self.__orientation.turn_right()
 
         @_die_protected
+        @_and_plot
         def _turn_left_agent(self):
             self.__orientation = self.__orientation.turn_left()
 
@@ -521,7 +561,7 @@ class Enviroment_with_agents(Enviroment):
     def get_winner(self):
         return self._winner
 
-    def run(self, time_interval=0.01):
+    def run(self, time_interval=0.1):
 
         self._epoch = 0
 
@@ -557,20 +597,23 @@ class Enviroment_with_agents(Enviroment):
                     #         time.sleep(0.1)
                     #     self.move_randomly()
 
-                    X = 1 #TODO no puedo pintar tras cada movimiento y tener hebras
-                    t1 = thread_with_exception(an_agent.move)
-                    # time1 = datetime.datetime.now()
-                    t1.start()
-                    t1.join(X)
-                    if t1.is_alive():
-                        t1.raise_exception()
-                        t1.join()
-                        self.__hidden_agents[i]._send_message({'type': 'too slow',
-                                                               'Description': 'You are expected to make moves before ' +
-                                                               str(X) + ' seconds'})
+                    ## CANDIDATO A REEMPLAZAR
+                    # X = 1 #TODO no puedo pintar tras cada movimiento y tener hebras
+                    # t1 = thread_with_exception(an_agent.move)
+                    # # time1 = datetime.datetime.now()
+                    # t1.start()
+                    # t1.join(X)
+                    # if t1.is_alive():
+                    #     t1.raise_exception()
+                    #     t1.join()
+                    #     self.__hidden_agents[i]._send_message({'type': 'too slow',
+                    #                                            'Description': 'You are expected to make moves before ' +
+                    #                                            str(X) + ' seconds'})
+                    #
+                    # # time2 = datetime.datetime.now()
+                    # # print(time2-time1)
 
-                    # time2 = datetime.datetime.now()
-                    # print(time2-time1)
+                    protect_inf_loop(an_agent.move,1,0.1)
             else:
                 for i in self.__living_agent_ids:
                     an_agent = self.__outer_agents[i]
