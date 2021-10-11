@@ -238,7 +238,7 @@ class Enviroment:
     def _clear_plot(self):
         if i_am_in_interatcive:
             pl.rcParams['figure.figsize'] = [13, 13]
-            _ = pl.clf();
+            # _ = pl.clf();
             from IPython import display;
             fig = pl.gcf();
             _ = display.display(fig);
