@@ -613,7 +613,7 @@ class Enviroment_with_agents(Enviroment):
                     # # time2 = datetime.datetime.now()
                     # # print(time2-time1)
 
-                    protect_inf_loop(an_agent.move,1,0.1)
+                    protect_inf_loop(an_agent.move,1,0.5)
             else:
                 for i in self.__living_agent_ids:
                     an_agent = self.__outer_agents[i]
