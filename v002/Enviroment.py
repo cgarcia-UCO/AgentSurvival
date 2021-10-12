@@ -225,7 +225,7 @@ class Enviroment:
     def _show_plot(self, time_interval = 0.01):
         if i_am_in_interatcive:
             from IPython import display;
-            pl.rcParams['figure.figsize'] = [13, 13]
+            pl.rcParams['figure.figsize'] = [11, 11]
             fig = pl.gcf();
             _ = display.display(fig);
             time.sleep(time_interval);
@@ -237,7 +237,7 @@ class Enviroment:
 
     def _clear_plot(self):
         if i_am_in_interatcive:
-            pl.rcParams['figure.figsize'] = [13, 13]
+            pl.rcParams['figure.figsize'] = [11, 11]
             _ = pl.clf();
             from IPython import display;
             fig = pl.gcf();
