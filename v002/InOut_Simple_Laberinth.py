@@ -53,7 +53,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                          # treasure_at_border = True,
                          food_ratio = 0.,
                          food_period = 100000,
-                         move_protection = False,
+                         move_protection = True,
                          plot_run=plot_run)
 
         self._entry_at_border = entry_at_border
