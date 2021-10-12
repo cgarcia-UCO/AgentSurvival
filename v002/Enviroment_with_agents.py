@@ -496,6 +496,9 @@ class Enviroment_with_agents(Enviroment):
             return None
 
     def plot(self, clear=True, time_interval = 0.01, length_path=-10):
+        # if clear:
+        #     self._clear_plot()
+        _ = pl.clf()
         super().plot(False)
 
         for ii in self.__hidden_agents:
@@ -508,9 +511,7 @@ class Enviroment_with_agents(Enviroment):
                     kk.plot()
 
         pl.legend(loc='center left', bbox_to_anchor=(1, 0.5));
-        if clear:
-            self._clear_plot()
-
+        display.clear_output(wait=True)
         pl.gca().autoscale();
         if clear:
             self._show_plot(time_interval=time_interval)
