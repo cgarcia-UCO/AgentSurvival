@@ -53,7 +53,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                          # treasure_at_border = True,
                          food_ratio = 0.,
                          food_period = 100000,
-                         move_protection = False, #TODO vigilar aquí y quitar el threading_with_exception
+                         move_protection = False,
                          plot_run=plot_run)
 
         self._entry_at_border = entry_at_border
@@ -99,7 +99,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
         return len(self._Enviroment_with_agents__living_agent_ids) <= 0 or self._exit_found #(self._epoch > 10 * self._size[0] * self._size[1]) or self._exit_found
 
     def create_agent(self, name, agent_class):
-        life = 10* self._size[0] * self._size[1]
+        life = 10000
         super().create_agent(name, agent_class,
                              self.entry._pos_y,
                              self.entry._pos_x,
