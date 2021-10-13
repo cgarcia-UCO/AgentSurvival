@@ -5,6 +5,8 @@ Created on Wed Oct 13 09:41:05 2021
 
 @author: carlos
 """
+
+''' DESCARGA DE LA BIBLIOTECA '''
 %matplotlib inline
 !mkdir v002
 !mkdir images
@@ -21,6 +23,8 @@ import time
 from v002 import *
 from v002.Agent import create_agent
 
+
+''' DEFINICIÓN DE MI AGENTE '''
 agent_name = 'YO!'
 
 def move(self):
@@ -31,10 +35,14 @@ def move(self):
     self.move_forward()
     
     
+''' PRUEBA VISUAL'''
 lb1 = InOut_Simple_Laberinth(7, plot_run='always')
 lb1.create_agent(agent_name, move)
 lb1.run()
 
+
+
+''' PRUEBA 'RÁPIDA' SOBRE 200 LABERINTOS OFFLINE '''
 from tqdm import tqdm
 num_runs = 200
 num_success =  0
