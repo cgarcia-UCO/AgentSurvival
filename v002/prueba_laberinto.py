@@ -5,7 +5,7 @@ Created on Wed Oct 13 09:41:05 2021
 
 @author: carlos
 """
-%matplotlib qt
+%matplotlib inline
 !mkdir v002
 !mkdir images
 !wget 'https://github.com/cgarcia-UCO/AgentSurvival/raw/main/v002/Agent.py' -O v002/Agent.py
