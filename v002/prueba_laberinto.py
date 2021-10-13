@@ -40,7 +40,7 @@ num_runs = 200
 num_success =  0
 
 for _ in tqdm(range(num_runs)):
-  lb1 = InOut_Simple_Laberinth(5, plot_run='never')
+  lb1 = InOut_Simple_Laberinth(13, plot_run='never')
   lb1.create_agent(agent_name, move)
   winner = lb1.run()
 
