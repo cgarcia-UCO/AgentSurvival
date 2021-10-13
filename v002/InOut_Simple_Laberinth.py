@@ -44,7 +44,8 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                     'exit_function': self._exit}
 
 
-    def __init__(self, size, entry_at_border=True, exit_at_border=True, plot_run='every epoch'):
+    def __init__(self, size, entry_at_border=True, exit_at_border=True, plot_run='every epoch',
+                 move_protection = True):
         moves_per_turn = 10*size*size
         super().__init__(size, max_moves_per_turn=moves_per_turn,
                          no_adjacents_in_cluster = False,
@@ -53,7 +54,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                          # treasure_at_border = True,
                          food_ratio = 0.,
                          food_period = 100000,
-                         move_protection = True,
+                         move_protection = move_protection,
                          plot_run=plot_run)
 
         self._entry_at_border = entry_at_border
