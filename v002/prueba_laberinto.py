@@ -35,3 +35,16 @@ lb1 = InOut_Simple_Laberinth(7, plot_run='always')
 lb1.create_agent(agent_name, move)
 lb1.run()
 
+from tqdm import tqdm
+num_runs = 200
+num_success =  0
+
+for _ in tqdm(range(num_runs)):
+  lb1 = InOut_Simple_Laberinth(5, plot_run='never')
+  lb1.create_agent(agent_name, move)
+  winner = lb1.run()
+
+  if winner is not None:
+    num_success += 1
+
+print("\n\nEncontraste la salida en", num_success, "ocasiones de", num_runs)
