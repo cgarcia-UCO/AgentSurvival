@@ -117,7 +117,7 @@ def protect_inf_loop(f, maxTime, intervalTime):
 
         time.sleep(2 * intervalTime)
     except:
-        # print('PARENT HAS BEEN KILLED')
+        print('PARENT HAS BEEN KILLED')
         pass
 
 
@@ -614,7 +614,7 @@ class Enviroment_with_agents(Enviroment):
                     # # time2 = datetime.datetime.now()
                     # # print(time2-time1)
 
-                    protect_inf_loop(an_agent.move,1,0.1)
+                    protect_inf_loop(an_agent.move,1,0.0001)
             else:
                 for i in self.__living_agent_ids:
                     an_agent = self.__outer_agents[i]
