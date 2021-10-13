@@ -31,7 +31,7 @@ def move(self):
     self.move_forward()
     
     
-lb1 = InOut_Simple_Laberinth(5, plot_run='always')
+lb1 = InOut_Simple_Laberinth(7, plot_run='always')
 lb1.create_agent(agent_name, move)
 lb1.run()
 
