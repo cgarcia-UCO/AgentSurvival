@@ -8,8 +8,10 @@ Created on Wed Oct 13 09:41:05 2021
 
 ''' DESCARGA DE LA BIBLIOTECA '''
 %matplotlib inline
-!mkdir v002
-!mkdir images
+%mkdir .runLaberinth
+%cd .runLaberinth
+%mkdir v002
+%mkdir images
 !wget 'https://github.com/cgarcia-UCO/AgentSurvival/raw/main/v002/Agent.py' -O v002/Agent.py
 !wget 'https://github.com/cgarcia-UCO/AgentSurvival/raw/main/v002/Enviroment.py' -O v002/Enviroment.py
 !wget 'https://github.com/cgarcia-UCO/AgentSurvival/raw/main/v002/__init__.py' -O v002/__init__.py
@@ -57,4 +59,7 @@ for _ in tqdm(range(num_runs)):
 
 print("\n\nEncontraste la salida en", num_success, "ocasiones de", num_runs)
 
-!rm -r v002 images
+%rm -r v002 images
+%cd ..
+%rm -r .runLaberinth
+ 
