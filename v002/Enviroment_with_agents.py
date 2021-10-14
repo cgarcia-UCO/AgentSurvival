@@ -16,10 +16,7 @@ HECHO quizás la solución sea definir los Agentes dentro de la clase Laberinth,
 Así, toda la información de los agentes está "protegida" dentro del laberinto. Esto no impide que el estudiante defina sus funciones
 dentro de clases que ellos se creen, pero "protege" la información de los mismos dentro del Laberinto.
 
-TODO quitar por defecto la entrada y salida del laberinto
-TODO definir como subclase simple el problema de entrar y salir del laberinto
 TODO podríamos definir también el de llegar a un punto destino conocido (A*, o sin conocer Anchura/Prof)
-TODO Llevar todo a un Google Colab para el alumnado
 '''
 import ctypes
 from datetime import datetime
@@ -538,7 +535,7 @@ class Enviroment_with_agents(Enviroment):
     def plot(self, clear=True, time_interval = 0.01, length_path=-10):
         if clear:
             self._clear_plot()
-        # _ = pl.clf() #TODO vigilar
+
         super().plot(False)
 
         for ii in self.__hidden_agents:
@@ -551,7 +548,6 @@ class Enviroment_with_agents(Enviroment):
                     kk.plot()
 
         pl.legend(loc='center left', bbox_to_anchor=(1, 0.5));
-        # display.clear_output(wait=True) #TODO vigilar
         pl.gca().autoscale();
         if clear:
             self._show_plot(time_interval=time_interval)
@@ -597,22 +593,6 @@ class Enviroment_with_agents(Enviroment):
                     #     for i in range(50):
                     #         time.sleep(0.1)
                     #     self.move_randomly()
-
-                    ## CANDIDATO A REEMPLAZAR
-                    # X = 1 #TODO no puedo pintar tras cada movimiento y tener hebras
-                    # t1 = thread_with_exception(an_agent.move)
-                    # # time1 = datetime.datetime.now()
-                    # t1.start()
-                    # t1.join(X)
-                    # if t1.is_alive():
-                    #     t1.raise_exception()
-                    #     t1.join()
-                    #     self.__hidden_agents[i]._send_message({'type': 'too slow',
-                    #                                            'Description': 'You are expected to make moves before ' +
-                    #                                            str(X) + ' seconds'})
-                    #
-                    # # time2 = datetime.datetime.now()
-                    # # print(time2-time1)
 
                     protect_inf_loop(an_agent.move,1,0.0001)
             else:

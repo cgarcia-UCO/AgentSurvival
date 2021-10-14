@@ -30,7 +30,6 @@ from v002.Agent import create_agent
 agent_name = 'YO!'
 
 def move(self):
-  # TODO define aquí dentro tu función. Lo siguiente es un ejemplo que deberías reemplazar con tu código
   for i in range(3):
     self.turn_right()
     self.move_forward()
