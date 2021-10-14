@@ -111,9 +111,10 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
         super().plot(clear, time_interval, None)
 
 class No_Walls_Laberinth(InOut_Simple_Laberinth):
-    def __init__(self, size, plot_run = 'every epoch'):
+    def __init__(self, size, plot_run = 'every epoch', move_protection=True):
         super().__init__(size, entry_at_border=False, exit_at_border=False,
-                         plot_run=plot_run)
+                         plot_run=plot_run,
+                         move_protection=move_protection)
         self._h_panels = np.zeros(self._size)
         self._v_panels = np.zeros(self._size)
         self._h_panels[self._size[0]-1,:] = 1

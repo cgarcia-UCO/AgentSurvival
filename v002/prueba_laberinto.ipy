@@ -7,7 +7,7 @@ Created on Wed Oct 13 09:41:05 2021
 """
 
 ''' DESCARGA DE LA BIBLIOTECA '''
-%matplotlib inline
+%matplotlib
 %mkdir .runLaberinth
 %cd .runLaberinth
 %mkdir v002
@@ -35,8 +35,8 @@ def move(self):
     self.turn_right()
     self.move_forward()
     self.move_forward()
-    
-    
+
+
 ''' PRUEBA VISUAL'''
 lb1 = InOut_Simple_Laberinth(7, plot_run='always', move_protection=False)
 lb1.create_agent(agent_name, move)
@@ -62,4 +62,4 @@ print("\n\nEncontraste la salida en", num_success, "ocasiones de", num_runs)
 %rm -r v002 images
 %cd ..
 %rm -r .runLaberinth
- 
+
