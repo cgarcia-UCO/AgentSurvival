@@ -294,7 +294,7 @@ class Enviroment:
 
 
     def _top_panel_at(self, x, y):
-        return self._h_panels[x, y]
+        return self._h_panels[x, y] == 1
 
     def _east_panel_at(self, x, y):
-        return self._v_panels[x, y]
+        return self._v_panels[x, y] == 1

@@ -5,10 +5,10 @@ Esta clase tiene agentes (clase anterior) que se mueven en el laberinto. Los age
 y para girar a ambos lados.
 
 HECHO Cuando un agente hace una acción, el Laberinto debería comprobar si ha agotado el número de movimientos en su turno,
-y así evitar que se intente hacer agentes tramposos. TODO Eso está hecho desde el agente, sin embargo, no está hecho
+y así evitar que se intente hacer agentes tramposos. Eso está hecho desde el agente, sin embargo, no está hecho
 desde funciones de objetos. Por ejemplo, si se quisiese que comer un objeto consumiese un movimiento. Para ello,
 de alguna forma debería hacer que la función de comer estuviese decorada con el agente que la invoca, de forma que
-así también se podría comprobar el número de movimientos ejecutados.
+así también se podría comprobar el número de movimientos ejecutados. Esto ya está hecho también.
 
 HECHO el laberinto debería ser el que llamase a los agentes indicándoles que les toca y que deben realizar un movimiento (hasta tres por turno, por ejemplo).
 
@@ -17,8 +17,12 @@ Así, toda la información de los agentes está "protegida" dentro del laberinto
 dentro de clases que ellos se creen, pero "protege" la información de los mismos dentro del Laberinto.
 
 TODO podríamos definir también el de llegar a un punto destino conocido (A*, o sin conocer Anchura/Prof)
+TODO un tipo de objeto podría ser una caja que tuviese que abrirse descifrando un enigma o con otro dispositivo (llave azul para caja azul). Para el caso del enigma, la caja podría requerir que el agente proveyese una función para calcular algo como el factorial de cualquier número o la multiplicación de matrices. Al intentar abrirla (llamando a la función de la caja que recibe la función que sabe resolver el enigma), la caja realiza comprobaciones con casos de test y se abre o no según si es correcto o no
+TODO otros objetos pueden ser mapas, pistolas, anteojos, material de construcción de muros, material de destrucción de muros, audífonos, mantas de invisibilidad, semillas para plantar huertos...
 '''
+import asyncio
 import ctypes
+import signal
 from datetime import datetime
 import time
 from string import ascii_lowercase
@@ -83,40 +87,72 @@ except:
     import matplotlib.pyplot as pl
     i_am_in_interatcive = False
 
-def sleeper(maxTime, intervalTime, notify_thread_id):
+class Time_out(Exception):
+    pass
 
-    try:
-        now = datetime.now()
-        init_time = now
+class BlockingPrinter():
+    def __init__(self):
+        self._my_semphore = threading.Semaphore()
 
-        while (now - init_time).seconds < maxTime:
-            time.sleep(intervalTime)
-            now = datetime.now()
+    def print(self, *args):
+        # self._my_semphore.acquire()
+        # print(args, flush=True)
+        # self._my_semphore.release()
 
-        ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(notify_thread_id),
-                                                         ctypes.py_object(SystemExit))
-    except:
-        # print("TIMER has been killed")
         pass
 
-def protect_inf_loop(f, maxTime, intervalTime):
-    my_id = threading.current_thread().ident
-    t1 = threading.Thread(target=sleeper, args=(maxTime, intervalTime, my_id))
-    t1.start()
-    try:
-        f()
-        t1.join(intervalTime)
-        if t1.is_alive():
-            # t1.raise_exception()
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(t1.ident),
-                                                       ctypes.py_object(SystemExit))
-            t1.join()
+blocking_printer = BlockingPrinter()
 
-        time.sleep(2 * intervalTime)
-    except:
-        print('PARENT HAS BEEN KILLED')
-        pass
-
+# def sleeper(maxTime, intervalTime, notify_thread_id):
+#
+#     try:
+#         print('Sleeper', flush=True)
+#         now = datetime.now()
+#         init_time = now
+#
+#         while (now - init_time).seconds < maxTime:
+#             time.sleep(intervalTime)
+#             now = datetime.now()
+#
+#         print('****Killing father', flush=True)
+#         # raise Time_out()
+#         ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(notify_thread_id),
+#                                                          ctypes.py_object(Time_out))
+#     except Exception as e:
+#         print("TIMER has been killed:", e.__str__(), ':', e, flush=True)
+#         pass
+#
+# def protect_inf_loop_v4(f, maxTime, intervalTime):
+#     import signal
+#     def handler(signum, frame):
+#         raise Time_out('end of time')
+#
+#     signal.signal(signal.SIGALRM, handler)
+#     try:
+#         # signal.alarm(maxTime)
+#         signal.setitimer(signal.ITIMER_REAL, maxTime)
+#         f()
+#
+#     finally: #He puesto esto para asegurarme de que se elimina la alarma programada antes de salir de esta función. Antes no era así si se lanzaba una excepción diferente a Time_out, por ejemplo, la de too_much_moves
+#         signal.alarm(0)
+#
+# def protect_inf_loop(f, maxTime, intervalTime):
+#     my_id = threading.current_thread().ident
+#     t1 = threading.Thread(target=sleeper, args=(maxTime, intervalTime, my_id))
+#     try:
+#         t1.start()
+#         f()
+#         if t1.is_alive():
+#             ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(t1.ident),
+#                                                        ctypes.py_object(SystemExit))
+#             t1.join()
+#
+#         for _ in range(3):
+#             time.sleep(intervalTime)
+#     finally:
+#         ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(t1.ident),
+#                                                    ctypes.py_object(SystemExit))
+#         t1.join()
 
 
 class Enviroment_with_agents(Enviroment):
@@ -142,14 +178,21 @@ class Enviroment_with_agents(Enviroment):
         def __init__(self, pos_x, pos_y, period, environment):
             super().__init__(pos_x, pos_y, environment)
             self._period = period
-            self._time_since_eaten = period + 1
+            self._current_nutrients = period + 1
             self.__nutrients = period - 1
             self.__my_avatar = pl.imread("images/PixelTomato.bmp")
             self.__my_avatar_2 = pl.imread("images/PixelNoTomato.bmp")
+            self.__is_active = True
 
         def is_active(self):
-            if self._time_since_eaten > self._period:
+            if self.__is_active and self._current_nutrients > 0:
                 return True
+            elif self.__is_active:
+                self.__is_active = False
+
+            # No haya nutrientes o esté inactivo, se devuelve Falso
+            return False
+
 
         def plot(self):
             if self.is_active():
@@ -162,33 +205,47 @@ class Enviroment_with_agents(Enviroment):
                                 extent=[self._pos_x + 0.2, self._pos_x + 0.8,
                                         self._pos_y + 0.2, self._pos_y + 0.8])
 
-        # TODO modificar para que eat vaya disminuyendo una unidad y consuma movimientos, no vida
-        # TODO cómo hacer para que una función de aquí se proteja con métodos de HiddenAgent
         def _eat(self, agent):
             hiden_agent = self._environment._Enviroment_with_agents__get_hidden_agent(agent, self)
+            hiden_agent._check_and_increase_moves_per_turn() # This line should stop this function with an exception if too much moves have been consumed
             position = hiden_agent._get_position()
             num_moves = hiden_agent._get_num_moves()
-            if self.is_active() and position[1] == self._pos_x and \
-                    position[0] == self._pos_y and num_moves < self._environment._max_moves_per_turn:
-                self._time_since_eaten = 0
-                hiden_agent._increase_life(self.__nutrients)
-                hiden_agent._send_message({'type': 'life_bonus', 'amount': self.__nutrients,
-                                           'Description': 'You have been given ' + str(self.__nutrients) + ' life points, because you have eaten food'})
+            if position[1] == self._pos_x and \
+                    position[0] == self._pos_y:
+                    # and num_moves < self._environment._max_moves_per_turn:
+
+                if self.is_active():
+                    self._current_nutrients -= 1
+                    hiden_agent._increase_life(1)#self.__nutrients)
+                    hiden_agent._send_message({'type': 'life_bonus', 'amount': 1,#self.__nutrients,
+                                               'Description': 'You have been given ' +
+                                                              str(1) + #str(self.__nutrients) +
+                                                              ' life points, because you have eaten food'})
+                    return 1
+                else:
+                    hiden_agent._send_message({'type': 'life_bonus', 'amount': 0,
+                                               'Description': 'You have been given ' + str(0) + ' life points, because you have eaten food'})
+                    return 0
 
         def _notify_time_iteration(self):
             if not self.is_active():
-                self._time_since_eaten += 1
+                self._current_nutrients += 1
+
+                if self._current_nutrients >= self.__nutrients:
+                    self.__is_active = True
 
         def _get_info(self):
             if self.is_active():
-                return {'type': 'food type 1', 'Description': 'This is a piece of food from a fixed source of food.'
+                return {'type': 'food type 1',
+                        'Description': 'This is a piece of food from a fixed source of food.'
                                                               ' You eat the food and 1) you get life points, and '
-                                                              '2) there will not be food for a number of epochs. '
+                                                              '2) in case you empty it, there will not be food for a number of epochs. '
                                                               'To eat it, you have to '
                                                               'invoke the function in the field eat_function with yourself as argument:'
                                                               '<this_dictionary>[\'eat_function\'](self). You\'d be sent a message '
                                                               'about the life_bonus in '
-                                                              'case you do it right. You would not, otherwise',
+                                                              'case you do it right, You would not, otherwise. In addition,'
+                                       'this function returns 1 in case of success, or 0 in case there is not more food',
                         'eat_function': self._eat}
             else:
                 return None
@@ -234,10 +291,32 @@ class Enviroment_with_agents(Enviroment):
             def inner(self):
                 f(self)
 
-                # No puedo imprimir si es una hebra diferente
-                if self.__laberinth._plot_run == 'always':# and not self.__laberinth._Enviroment_with_agents__move_protection:
-                    self.__laberinth.plot(clear=True)
+                if self.__laberinth._plot_run == 'always':
+                    blocking_printer.print('_and_plot is goint to check the semaphore')#, flush=True)
+
+                    # He puesto un semáforo, porque mandar excepciones a matplotlib me da problemas.
+                    # Ahora, el mandar una excepción de Time_out va a pedir el semáforo antes de mandarla
+                    # y así evito el problema. Además, la he puesto no bloqueante, porque si el que
+                    # manda la excepción ya ha pillado el semáforo, es decir, va a mandar la excepción,
+                    # cancelo el dibujado con matplotlib
+                    if self.__laberinth.semaphore_for_raising_Exception.acquire(blocking=False):
+                        blocking_printer.print('_and_plot got the semaphore and is goint to plot')#, flush=True)
+                        self.__laberinth.plot(clear=True)
+                        blocking_printer.print('_and_plot plotted and is goint to release the semaphore')#, flush=True)
+                        self.__laberinth.semaphore_for_raising_Exception.release()
+                        blocking_printer.print('_and_plot released the semaphore')#, flush=True)
+                    else:
+                        blocking_printer.print('_and_plot did not get the semaphore')#, flush=True)
             return inner
+
+        def _check_and_increase_moves_per_turn(self):
+            if self.__num_moves < self.__laberinth._max_moves_per_turn:
+                self.__num_moves += 1
+            else:
+                self._send_message(
+                    {'type': 'too much moves2', 'Description': 'You have tried to do more moves than allowed per turn'})
+                # print("Too much moves per turn")
+                raise TooMuchMovesPerTurn()
 
         def _protected_move(f):
             def inner(self):
@@ -432,7 +511,7 @@ class Enviroment_with_agents(Enviroment):
                  # entry_at_border = True,
                  # treasure_at_border = True,
                  food_ratio = 0.05,
-                 food_period = 10,
+                 food_period = 50,
                  move_protection = True,
                  plot_run = 'every epoch'):
         super().__init__(size, no_adjacents_in_cluster, show_construction)
@@ -447,6 +526,7 @@ class Enviroment_with_agents(Enviroment):
         self.__living_agent_ids = set()
         self.__move_protection = move_protection
         self._winner = None
+        self.semaphore_for_raising_Exception = threading.Semaphore()
         self.__posible_cmaps = [
             'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
             'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
@@ -468,6 +548,98 @@ class Enviroment_with_agents(Enviroment):
                     new_object = self.__Food(i, j, food_period, self)
                     self.__objects_pointers.add(new_object)
                     self.__objects[i][j].append(new_object)
+
+    '''
+    Esta función se encarga de ejecutar f en la hebra principal, pero además corta su ejecución en caso
+    de que se exceda un tiempo de ejecución
+    '''
+    def protect_inf_loop_v5(self, f, maxTime):
+
+        father_finished = False
+
+        '''
+        Para ello, utiliza un temporizador, en una hebra secundaria, que cuando acaba el tiempo manda una excepción
+        a la hebra principal. Esta función simplemente manda la excepción, y la ejecuta un temporizador del paquete
+        threading 
+        '''
+        def send_me_an_exception(semaphore, notify_thread_id):
+            blocking_printer.print(send_me_an_exception.__name__, 'going to get the semaphore')#, flush=True)
+
+            # Dado que mandar la excepción a la hebra principal a veces interfiere negativamente con algunas cosas
+            # vamos a utilizar un semáforo
+            if semaphore.acquire():
+                blocking_printer.print(send_me_an_exception.__name__, 'got the semaphore and going to send exception')#, flush=True)
+
+                # Una vez dentro del semáforo, enviaremos la excepción sólo si esta variable, global en la función que
+                # engloba a esta es Falso. Puede ocurrir que esta función se haya quedado esperando en el semáforo
+                # y cuando entre, la función padre ya haya marcado que está acabando. Entonces, no debe mandar la
+                # excepción, pues puede recibirla la hebra principal en un trozo de código no preparado para gestionarla
+                if father_finished is False:
+                    ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(notify_thread_id),
+                                                               ctypes.py_object(Time_out))
+                else:
+                    blocking_printer.print(send_me_an_exception.__name__, 'did not send the exception because father finished')#, flush=True)
+                blocking_printer.print(send_me_an_exception.__name__, 'going to release the semaphore')#, flush=True)
+                semaphore.release()
+                # print(send_me_an_exception.__name__, 'released the semaphore', flush=True)
+            else:
+                blocking_printer.print('This messages should never be printed'.upper())
+
+        my_id = threading.current_thread().ident
+        try:
+            # Aquí se inicia el temporizador y se ejecuta la función f
+            t = threading.Timer(maxTime, send_me_an_exception, args=[self.semaphore_for_raising_Exception, my_id])
+            t.start()
+            f()
+
+            # Si llegamos a este punto, significa que hemos terminado de ejecutar la función f, y lo marcamos
+            father_finished = True
+            blocking_printer.print('protect_inf_loop set father_finished to True')
+        # except Time_out as e:
+        #     father_finished = True
+        #     raise
+
+        # Para acabar esta función, por la razón que sea (haber recibido un Time_out, otra excepción, o ninguna
+        # debemos asegurarnos de que la hebra que puede mandarnos la excepción no lo va a hacer. Por ello:
+        finally:
+            try:
+                # Intentamos coger el semáforo, apuntar que hemos acabado y cancelar el temporixador
+                # blocking_printer.print('protect_inf_loop is going to check the semaphore')#, flush=True)
+                if self.semaphore_for_raising_Exception.acquire(blocking=False):
+                    father_finished = True
+                    blocking_printer.print('protect_inf_loop got the semaphore and is going to cancel the timer')#, flush=True)
+                    t.cancel()
+                    blocking_printer.print('protect_inf_loop is goint to release the semaphore')#, flush=True)
+                    self.semaphore_for_raising_Exception.release()
+                    blocking_printer.print('protect_inf_loop released the semaphore')#, flush=True)
+
+                # Si no hemos podido coger el semáforo, es porque la hebra lo ha cogido y nos va a mandar la excepción
+                # simplemente tenemos que esperarla. No debe tardar.
+                # TODO puede que hayamos llegado aquí por otra excepción, y nos llegue de repente la Time_out.
+                # todo no sé si eso es problemático, pues estamos tratando una excepción mientras recibimos una segunda
+                # Por ahora, no es posible llegar aquí y recibir una excepción diferente a Time_out.
+                else:
+                    if father_finished == False:
+                        # blocking_printer.print('protect_inf_loop is expecting the signal', father_finished)#, flush=True)
+                        print('protect_inf_loop is expecting the signal', flush=True)
+                        counter = 0
+                        for _ in range(200):
+                            # time.sleep(0.01)
+                            for _ in range(200):
+                                for _ in range(200):
+                                    for _ in range(200):
+                                        for _ in range(200):
+                                            sol = np.sqrt(2)
+                                            counter += 1
+                                            # blocking_printer.print(counter)
+                                            print(counter, flush=True)
+                        blocking_printer.print('')
+                        blocking_printer.print('this message should never be printed'.upper())
+            # except Exception as e:
+            #     blocking_printer.print('************OTRA2****', e.__class__, e)#, flush=True)
+            #     raise
+            finally:
+                pass
 
     def addObject(self, object, pos_x, pos_y):
         self.__objects_pointers.add(object)
@@ -512,7 +684,7 @@ class Enviroment_with_agents(Enviroment):
             if orientation is None:
                 orientation = Orientation.UP
             if life is None:
-                life = 10*self._size[0] * self._size[1]
+                life = self._size[0] * self._size[1]
             an_agent = self.__Hidden_Agent(name, self, pos_x, pos_y,
                                            orientation=orientation,
                                            life= life, cmap=self.__posible_cmaps[len(self.__hidden_agents)],
@@ -594,14 +766,30 @@ class Enviroment_with_agents(Enviroment):
                     #         time.sleep(0.1)
                     #     self.move_randomly()
 
-                    protect_inf_loop(an_agent.move,1,0.0001)
+                    max_time_per_move = 0.1
+                    try:
+                        self.protect_inf_loop_v5(an_agent.move,max_time_per_move)
+                    # Aquí debemos gestionar los dos tipos de excepciones que por ahora controlamos
+                    # demasiados movimientos y demasiado tiempo. Para las demás, mastercard
+                    except TooMuchMovesPerTurn as e:
+                        blocking_printer.print('**Too much moves')#, flush=True)
+                        pass
+                    except Time_out:
+                        self.__hidden_agents[i]._send_message({'type': 'too slow',
+                                                              'Description': 'Your move function took more time than'
+                                                                             ' the allowed ' + str(max_time_per_move) +
+                                                              ' seconds and was interrupted'})
+                        blocking_printer.print('PARENT HAS BEEN KILLED')#, flush=True)
+                    except Exception as e:
+                        print('****************MASTERCARD*****:', e.__class__, ':', e,flush=True)
             else:
                 for i in self.__living_agent_ids:
                     an_agent = self.__outer_agents[i]
                     try:
                         an_agent.move()
-                    except Exception as e:
-                        print(e)
+                    except TooMuchMovesPerTurn as e:
+                        # print('**Too much moves')
+                        pass
 
             for i in self._dying_agents:
                 self.__living_agent_ids.remove(i)
@@ -611,6 +799,7 @@ class Enviroment_with_agents(Enviroment):
                     for kk in self.__objects[ii][jj]:
                         kk._notify_time_iteration()
 
+            # signal.alarm(0) # Esta línea protege de que no salte una alarma perdida. Creo que no es necesaria con el finally que he incluído en el protect_inf_moves_v4
             if self._plot_run == 'every epoch':
                 self.plot(clear=True,time_interval=time_interval)
 
