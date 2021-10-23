@@ -684,7 +684,7 @@ class Enviroment_with_agents(Enviroment):
             if orientation is None:
                 orientation = Orientation.UP
             if life is None:
-                life = self._size[0] * self._size[1]
+                life = 10 * self._size[0] * self._size[1]
             an_agent = self.__Hidden_Agent(name, self, pos_x, pos_y,
                                            orientation=orientation,
                                            life= life, cmap=self.__posible_cmaps[len(self.__hidden_agents)],
