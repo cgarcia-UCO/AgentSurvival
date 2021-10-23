@@ -782,6 +782,7 @@ class Enviroment_with_agents(Enviroment):
                         blocking_printer.print('PARENT HAS BEEN KILLED')#, flush=True)
                     except Exception as e:
                         print('****************MASTERCARD*****:', e.__class__, ':', e,flush=True)
+                        raise
             else:
                 for i in self.__living_agent_ids:
                     an_agent = self.__outer_agents[i]
