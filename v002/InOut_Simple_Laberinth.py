@@ -125,16 +125,16 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
         return len(self._Enviroment_with_agents__living_agent_ids) <= 0 or self._exit_found or\
                np.max([num_cells_visited[i] for i in num_cells_visited]) >= self._size[0] * self._size[1]#(self._epoch > 10 * self._size[0] * self._size[1]) or self._exit_found
 
-    def create_agent(self, name, agent_class):
-        if self._exit_at_border == 'no exit':
+    def create_agent(self, name, agent_class, life=None):
+        if life is None and self._exit_at_border == 'no exit':
             life = 10* self._size[0] * self._size[1]
-        else:
+        elif life is None:
             life = 10* self._size[0] * self._size[1]
         super().create_agent(name, agent_class,
                              self.entry._pos_y,
                              self.entry._pos_x,
                              self._start_orientation,
-                             life)
+                             life=life)
 
     def plot(self, clear=True, time_interval=0.01):
 
