@@ -72,6 +72,7 @@ import threading
 #         if res > 1:
 #             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
 #             print('Exception raise failure')
+MOVES_PER_PUNCH = 3
 
 try:
     from IPython import get_ipython
@@ -250,13 +251,13 @@ class Enviroment_with_agents(Enviroment):
             else:
                 return None
 
-    class __Hidden_Agent:
+    class _Hidden_Agent:
         def __init__(self, name, laberinth, pos_x, pos_y, orientation, life, cmap, color):
             self.__position = [pos_x, pos_y]
             self.__orientation = orientation
             self.__path = [tuple([self.__position[0]+0.5,self.__position[1]+0.5])]
             self.__laberinth = laberinth
-            self.__name = name
+            self._name = name
             self.__num_moves = 0
             self.__my_avatar = {}
             self.__my_avatar[Orientation.DOWN] = pl.imread("images/face1_borders.bmp")#avatar1.bmp")
@@ -309,9 +310,9 @@ class Enviroment_with_agents(Enviroment):
                         blocking_printer.print('_and_plot did not get the semaphore')#, flush=True)
             return inner
 
-        def _check_and_increase_moves_per_turn(self):
-            if self.__num_moves < self.__laberinth._max_moves_per_turn:
-                self.__num_moves += 1
+        def _check_and_increase_moves_per_turn(self, num_moves = 1):
+            if self.__num_moves + num_moves <= self.__laberinth._max_moves_per_turn:
+                self.__num_moves += num_moves
             else:
                 self._send_message(
                     {'type': 'too much moves2', 'Description': 'You have tried to do more moves than allowed per turn'})
@@ -343,13 +344,59 @@ class Enviroment_with_agents(Enviroment):
         def _update_path(self):
             self.__path.append(tuple([self.__position[0] + 0.5, self.__position[1] + 0.5]))
 
+        def _be_punched(self, agent):
+            hiden_agent = self.__laberinth._Enviroment_with_agents__get_hidden_agent(agent, self)
+
+            if hiden_agent is not None:
+                if self.__laberinth._Enviroment_with_agents__outer_agent_ids[agent] ==\
+                        self.__laberinth._Enviroment_with_agents__id_current_turn:
+
+                    hiden_agent._check_and_increase_moves_per_turn(MOVES_PER_PUNCH) # Three turns per punch
+
+                    if hiden_agent._get_position() == self._get_position() and self._is_alive() and hiden_agent._is_alive():
+                        self._increase_life(-1)
+                        self._send_message({'type': 'punched', 'amount': 1, 'Description': 'You have been punched'})
+                        hiden_agent._send_message({'type': 'punch success', 'amount': 1,
+                                                   'Description': 'You have punched another agent (both of you have been hurt)'})
+                        return 1
+                    else:
+                        hiden_agent._send_message({'type': 'punch fail',
+                                                   'Description': 'You have tried to punch another agent, but you missed'})
+                        return 0
+                else:
+                    print('Someone tried to cheat the game (1)')
+            else:
+                print('Someone tried to cheat the game(2)')
+
+        def _get_info(self):
+            if self._is_alive():
+                return {'type': 'agent',
+                        'Description': 'I am a friend, or... an enemy.\n'
+                                       'So far, you can just ignore me or punch me. If you punch me, '
+                                       'you will consume ' + str(MOVES_PER_PUNCH) +' moves of your turn and will hurt me by one unit. Is it worthy?'
+                                       'To punch me, invoke the function in the field punch_function with yourself as argument:'
+                                       '<this_dictionary>[\'punch_function\'](self). You\'d be sent a message in case you'
+                                       'do it right. You would not, otherwise.',
+                        # 'This is a piece of food from a fixed source of food.'
+                        #                                       ' You eat the food and 1) you get life points, and '
+                        #                                       '2) in case you empty it, there will not be food for a number of epochs. '
+                        #                                       'To eat it, you have to '
+                        #                                       'invoke the function in the field eat_function with yourself as argument:'
+                        #                                       '<this_dictionary>[\'eat_function\'](self). You\'d be sent a message '
+                        #                                       'about the life_bonus in '
+                        #                                       'case you do it right, You would not, otherwise. In addition,'
+                        #                'this function returns 1 in case of success, or 0 in case there is not more food',
+                        'punch_function': self._be_punched}
+            else:
+                return None
+
         def plot(self, length_path = -10):
             path_x = [j[1] for j in self.__path]
             path_y = [j[0] for j in self.__path]
             if self._life > 0:
-                label = self.__name + ' ' + str(self._life)
+                label = self._name + ' ' + str(self._life)
             else:
-                label = self.__name + ' died'
+                label = self._name + ' died'
 
             if length_path is not None:
                 pl.plot(path_x[length_path:], path_y[length_path:], color=self._color)
@@ -485,7 +532,7 @@ class Enviroment_with_agents(Enviroment):
         def _whats_here(self):
             x, y = self.__position[1], self.__position[0]
             laberinth = self.__laberinth
-            objects = laberinth._whats_here(x, y)
+            objects = laberinth._whats_here(x, y, self)
             walls = {'front': self._wall_front_agent(), 'back': self._wall_back_agent(),
                      'left': self._wall_left_agent(), 'right': self._wall_right_agent()}
             return {'walls': walls, 'objects': objects}
@@ -513,8 +560,9 @@ class Enviroment_with_agents(Enviroment):
                  food_ratio = 0.05,
                  food_period = 50,
                  move_protection = True,
+                 remove_walls_prob=0,
                  plot_run = 'every epoch'):
-        super().__init__(size, no_adjacents_in_cluster, show_construction)
+        super().__init__(size, no_adjacents_in_cluster, show_construction, remove_walls_prob = remove_walls_prob)
             # , entry_at_border,
             #      treasure_at_border)
         self.__hidden_agents = {}
@@ -650,17 +698,27 @@ class Enviroment_with_agents(Enviroment):
     localizar su representación interna en el laberinto
     '''
     def __get_hidden_agent(self, agent, who_ask):
-        if isinstance(who_ask, self._Object) and who_ask in self.__objects_pointers:
+        if (isinstance(who_ask, self._Object) and who_ask in self.__objects_pointers) or\
+                isinstance(who_ask, self._Hidden_Agent) and agent in self.__outer_agent_ids:# and who_ask in self.__hidden_agents):
             id = self.__outer_agent_ids[agent]
             return self.__hidden_agents[id]
+        else:
+            return None
 
-    def _whats_here(self, x, y):
+    def _whats_here(self, x, y, who_ask):
         objects = []
 
         for i in self.__objects[x][y]:
             info = i._get_info()
             if info is not None:
                 objects.append(info)
+
+        for i in self.__hidden_agents:
+            agent = self.__hidden_agents[i]
+            if agent._Hidden_Agent__position == [y,x] and agent != who_ask:
+                info = agent._get_info()
+                if info is not None:
+                    objects.append(info)
 
         return objects
 
@@ -685,10 +743,10 @@ class Enviroment_with_agents(Enviroment):
                 orientation = Orientation.UP
             if life is None:
                 life = 10 * self._size[0] * self._size[1]
-            an_agent = self.__Hidden_Agent(name, self, pos_x, pos_y,
-                                           orientation=orientation,
-                                           life= life, cmap=self.__posible_cmaps[len(self.__hidden_agents)],
-                                           color=self.__possible_colors[len(self.__hidden_agents)])
+            an_agent = self._Hidden_Agent(name, self, pos_x, pos_y,
+                                          orientation=orientation,
+                                          life= life, cmap=self.__posible_cmaps[len(self.__hidden_agents) % len(self.__posible_cmaps)],
+                                          color=self.__possible_colors[len(self.__hidden_agents) + 1 % len(self.__possible_colors)])
             self.__hidden_agents[id] = an_agent
             new_agent = agent_class(
                 an_agent._move_forward_agent,
@@ -735,6 +793,15 @@ class Enviroment_with_agents(Enviroment):
         self._epoch = 0
 
         while not self.stop_condition():
+
+            # if you want to know the number of cells visited by each agent online.
+            # TODO Para pasar muchos argumentos a un programa, me gusta más la opción del params de PonyGE2
+            # num_cells_visited = {self.__hidden_agents[i]._name:
+            #                          len(np.unique([str(j[0]) + str(j[1])
+            #                                         for j in self.__hidden_agents[i]._Hidden_Agent__path]))
+            #                      for i in self.__hidden_agents}
+            # print(num_cells_visited)
+
             self._epoch += 1
         # for _ in range(1000):
             for i in self.__hidden_agents:
@@ -758,6 +825,7 @@ class Enviroment_with_agents(Enviroment):
             if self.__move_protection:
                 for i in self.__living_agent_ids:
                     an_agent = self.__outer_agents[i]
+                    self.__id_current_turn = i
 
                     # Movimiento del agente protegido frente a bucles infinitos
                     # debe tardar menos de X segundos. El test que me ha funcionado en move es el siguiente, que lo corta la excepción
@@ -785,6 +853,7 @@ class Enviroment_with_agents(Enviroment):
                         raise
             else:
                 for i in self.__living_agent_ids:
+                    self.__id_current_turn = i
                     an_agent = self.__outer_agents[i]
                     try:
                         an_agent.move()
@@ -804,10 +873,16 @@ class Enviroment_with_agents(Enviroment):
             if self._plot_run == 'every epoch':
                 self.plot(clear=True,time_interval=time_interval)
 
-        if not self._plot_run == 'never':
-            pl.ioff()
-            self._clear_plot()
-            self.plot(clear=False,time_interval=time_interval)
-            pl.show()
+        #TODO quizás quitar
+        # if not self._plot_run == 'never':
+        #     pl.ioff()
+        #     self._clear_plot()
+        #     self.plot(clear=False,time_interval=time_interval)
+        #     pl.show()
 
-        return self.get_winner()
+        # return self.get_winner()._name
+        return {'winner': None if self.get_winner() is None else self.get_winner()._name,
+                'num_cells_visited': {self.__hidden_agents[i]._name:
+                                          len(np.unique([str(j[0])+str(j[1])
+                                                         for j in self.__hidden_agents[i]._Hidden_Agent__path]))
+                                      for i in self.__hidden_agents}}

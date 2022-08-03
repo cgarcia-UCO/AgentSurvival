@@ -173,7 +173,7 @@ class Enviroment:
             self._h_panels[changing_cell[0], changing_cell[1]] = 0
 
     def __init__(self, size, no_adjacents_in_cluster = False,
-                 show_construction = False):#,
+                 show_construction = False, remove_walls_prob = 0):#,
                  # entry_at_border = True,
                  # treasure_at_border = True):
         self._size = (size, size)
@@ -222,6 +222,16 @@ class Enviroment:
                 if self.show_construction:
                     self.plot()
 
+        for i in range(self._h_panels.shape[0]-1):
+            for j in range(self._h_panels.shape[1]):
+                if np.random.rand() <= remove_walls_prob:
+                    self._h_panels[i,j] = 0
+
+        for i in range(self._v_panels.shape[0]):
+            for j in range(self._v_panels.shape[1]-1):
+                if np.random.rand() <= remove_walls_prob:
+                    self._v_panels[i,j] = 0
+
     def _show_plot(self, time_interval = 0.01):
         if i_am_in_interatcive:
             from IPython import display;
@@ -249,6 +259,7 @@ class Enviroment:
             else:
                 pl.ioff()
             pl.clf()
+
 
     def plot(self, clear=True):
 

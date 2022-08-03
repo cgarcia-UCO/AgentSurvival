@@ -1,3 +1,6 @@
+from matplotlib import pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+
 from v002 import Enviroment_with_agents, pl
 import numpy as np
 
@@ -45,22 +48,24 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
 
 
     def __init__(self, size, entry_at_border=True, exit_at_border=True, plot_run='every epoch',
-                 move_protection = True):
+                 move_protection = True,remove_walls_prob=0):
         moves_per_turn = 10*size*size
         super().__init__(size, max_moves_per_turn=moves_per_turn,
-                         no_adjacents_in_cluster = False,
+                         no_adjacents_in_cluster = True,
                          show_construction = False,
                          # entry_at_border = True,
                          # treasure_at_border = True,
                          food_ratio = 0.,
                          food_period = 100000,
                          move_protection = move_protection,
-                         plot_run=plot_run)
+                         plot_run=plot_run,
+                         remove_walls_prob=remove_walls_prob)
 
         self._entry_at_border = entry_at_border
         self._exit_at_border = exit_at_border
         self._start_orientation = Orientation.UP
         self._exit_found = False
+        self.times_visited = np.zeros((self._size[0], self._size[1]))
 
         pos_x = np.random.randint(self._size[0])
         pos_y = np.random.randint(self._size[1])
@@ -85,22 +90,46 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
         pos_x = np.random.randint(self._size[0])
         pos_y = np.random.randint(self._size[0])
 
-        if self._exit_at_border:
-            axis = np.random.choice([0, 1])
+        if exit_at_border != 'no exit':
+            if self._exit_at_border:
+                axis = np.random.choice([0, 1])
 
-            if axis == 0:
-                pos_x = np.random.choice([0, self._size[axis] - 1])
-            else:
-                pos_y = np.random.choice([0, self._size[axis] - 1])
+                if axis == 0:
+                    pos_x = np.random.choice([0, self._size[axis] - 1])
+                else:
+                    pos_y = np.random.choice([0, self._size[axis] - 1])
 
-        exit = self._Exit(pos_x, pos_y, self)
-        self.addObject(exit, pos_x, pos_y)
+            exit = self._Exit(pos_x, pos_y, self)
+            self.addObject(exit, pos_x, pos_y)
 
     def stop_condition(self):
-        return len(self._Enviroment_with_agents__living_agent_ids) <= 0 or self._exit_found #(self._epoch > 10 * self._size[0] * self._size[1]) or self._exit_found
+        num_cells_visited = {'null': 0}
+        if self._exit_at_border == 'no exit':
+            agents = self._Enviroment_with_agents__hidden_agents
+            first_agent_path = agents[list(agents.keys())[0]]._Hidden_Agent__path
+
+            for i in range(self._size[0]):
+                for j in range(self._size[1]):
+                    self.times_visited[i][j] = np.sum([cell[0] == i + 0.5 and cell[1] == j + 0.5
+                                           for cell in first_agent_path])
+
+            num_cells_visited = {agents[i]._name:
+                                     len(np.unique([str(j[0]) + str(j[1])
+                                                    for j in agents[i]._Hidden_Agent__path]))
+                                 for i in agents}
+
+            if  self._plot_run == 'every epoch':
+                print(num_cells_visited)
+
+
+        return len(self._Enviroment_with_agents__living_agent_ids) <= 0 or self._exit_found or\
+               np.max([num_cells_visited[i] for i in num_cells_visited]) >= self._size[0] * self._size[1]#(self._epoch > 10 * self._size[0] * self._size[1]) or self._exit_found
 
     def create_agent(self, name, agent_class):
-        life = 10* self._size[0] * self._size[1]
+        if self._exit_at_border == 'no exit':
+            life = 10* self._size[0] * self._size[1]
+        else:
+            life = 10* self._size[0] * self._size[1]
         super().create_agent(name, agent_class,
                              self.entry._pos_y,
                              self.entry._pos_x,
@@ -108,7 +137,28 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                              life)
 
     def plot(self, clear=True, time_interval=0.01):
-        super().plot(clear, time_interval, None)
+
+        if self._exit_at_border == 'no exit':
+            if clear:
+                self._clear_plot()
+            super().plot(False, time_interval, None)#clear, time_interval, None)
+
+            if 'hot_alpha' not in plt.colormaps():
+                ncolors = 256
+                color_array = plt.get_cmap('hot')(range(ncolors))
+                color_array[:, -1] = 0.2
+                # create a colormap object
+                map_object = LinearSegmentedColormap.from_list(name='hot_alpha', colors=color_array)
+
+                # register this new colormap with matplotlib
+                plt.register_cmap(cmap=map_object)
+            plt.imshow(1- (self.times_visited / np.max(np.max(self.times_visited))), cmap='hot_alpha', interpolation='nearest',
+                       extent=[0, self._size[0],
+                               self._size[1], 0])
+            if clear:
+                self._show_plot(time_interval=time_interval)
+        else:
+            super().plot(clear, time_interval, None)
 
 class No_Walls_Laberinth(InOut_Simple_Laberinth):
     def __init__(self, size, plot_run = 'every epoch', move_protection=True):
