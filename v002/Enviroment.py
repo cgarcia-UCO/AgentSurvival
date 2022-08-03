@@ -236,11 +236,26 @@ class Enviroment:
         if i_am_in_interatcive:
             from IPython import display;
             pl.rcParams['figure.figsize'] = [8, 8]
+            pl.tick_params(
+                axis='both',  # changes apply to the x-axis
+                which='both',  # both major and minor ticks are affected
+                bottom=False,  # ticks along the bottom edge are off
+                top=False,  # ticks along the top edge are off
+                labelbottom=False)  # labels along the bottom edge are off
             fig = pl.gcf();
             _ = display.display(fig);
             time.sleep(time_interval);
             # print(pl.rcParams['figure.figsize'])
         else:
+            pl.tick_params(
+                axis='both',  # changes apply to the x-axis
+                which='both',  # both major and minor ticks are affected
+                bottom=False,  # ticks along the bottom edge are off
+                top=False,  # ticks along the top edge are off
+                labelbottom=False,  # labels along the bottom edge are off
+                left=False,
+                right=False,
+                labelleft=False)
             pl.ion()
             pl.pause(time_interval)
             pl.show()
