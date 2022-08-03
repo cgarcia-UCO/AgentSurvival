@@ -796,9 +796,8 @@ def test_inOutLaberinth():
 
     for i in range(x):
         # lb1.create_agent('silly' + str(i+1), move_silly)
-        lb1.create_agent('Grupo1_SIN', move_grupo1Sin)
         # lb1.create_agent('Random' + str(i + 1), move_randomly)
-        # lb1.create_agent('Smarter', exit_from_laberinth_complex_v2)#exit_from_laberinth_complex) #exit_from_laberinth)
+        lb1.create_agent('Smarter', exit_from_laberinth_complex_v2)#exit_from_laberinth_complex) #exit_from_laberinth)
         # lb1.create_agent('RightWall', exit_from_laberinth)
     winner = lb1.run()
 
@@ -837,7 +836,7 @@ def test_emptyLaberinth():
 if __name__ == '__main__':
         #np.random.seed(123456)
 
-        test_xAgents(8)
+        #test_xAgents(8)
         # test_2000Laberithns()
         # num_wins = {}
         # for _ in range(20):
@@ -977,7 +976,7 @@ if __name__ == '__main__':
         # np.random.set_state(state)
         # print("Seed: ", np.random.get_state())
 
-        # test_inOutLaberinth()
+        test_inOutLaberinth()
         # test_inOutLaberinth_complex()
         # test_200inOutLaberingth()
 
