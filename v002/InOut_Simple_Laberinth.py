@@ -29,7 +29,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
             if position[1] == self._pos_x and \
                     position[0] == self._pos_y:
                 self._environment._exit_found = True
-                self._environment._winner = agent
+                self._environment._winner = hiden_agent
                 hiden_agent._should_stop = True
                 hiden_agent._send_message({'type': 'success laberinth',
                                            'Description': 'You exited from the laberinth'})
