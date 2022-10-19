@@ -808,10 +808,10 @@ def test_inOutLaberinth():
 
 
 def test_inOutLaberinth_complex():
-    lb1 = InOut_Simple_Laberinth(15, plot_run='end',#'every epoch',
+    lb1 = InOut_Simple_Laberinth(15, plot_run='every epoch',#'end',#'every epoch',
                                  # move_protection = False,
                                  remove_walls_prob=0.5,
-                                 exit_at_border='no exit',
+                                 exit_at_border=False,#'no exit',
                                  entry_at_border=False)
 
     x = 1
@@ -976,8 +976,8 @@ if __name__ == '__main__':
         # np.random.set_state(state)
         # print("Seed: ", np.random.get_state())
 
-        test_inOutLaberinth()
-        # test_inOutLaberinth_complex()
+        # test_inOutLaberinth()
+        test_inOutLaberinth_complex()
         # test_200inOutLaberingth()
 
         # test_agent_as_a_function_in_treasure()

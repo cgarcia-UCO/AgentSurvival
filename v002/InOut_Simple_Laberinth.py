@@ -46,6 +46,16 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                                                    'case you do it right. You would not, otherwise',
                     'exit_function': self._exit}
 
+    class _Treasure(_Exit):
+        def __init__(self, pos_x, pos_y, environment):
+            super().__init__(pos_x, pos_y, environment)
+            self.__my_avatar = pl.imread("images/image-from-rawpixel-id-7371573.png")
+
+        def plot(self):
+            # https://www.rawpixel.com/image/7371573
+            pl.gca().imshow(self.__my_avatar,
+                            extent=[self._pos_x + 0.2, self._pos_x + 0.8,
+                                    self._pos_y + 0.2, self._pos_y + 0.8])
 
     def __init__(self, size, entry_at_border=True, exit_at_border=True, plot_run='every epoch',
                  move_protection = True,remove_walls_prob=0):
@@ -99,8 +109,12 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                 else:
                     pos_y = np.random.choice([0, self._size[axis] - 1])
 
-            exit = self._Exit(pos_x, pos_y, self)
-            self.addObject(exit, pos_x, pos_y)
+                exit = self._Exit(pos_x, pos_y, self)
+                self.addObject(exit, pos_x, pos_y)
+            else:
+                treasure = self._Treasure(pos_x, pos_y, self)
+                self.addObject(treasure, pos_x, pos_y)
+
 
     def stop_condition(self):
         num_cells_visited = {'null': 0}
