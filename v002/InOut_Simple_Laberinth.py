@@ -49,7 +49,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
     class _Treasure(_Exit):
         def __init__(self, pos_x, pos_y, environment):
             super().__init__(pos_x, pos_y, environment)
-            self.__my_avatar = pl.imread("images/chest.png")
+            self.__my_avatar = pl.imread("images/chest.bmp")
 
         def plot(self):
             # https://www.rawpixel.com/image/7371573
