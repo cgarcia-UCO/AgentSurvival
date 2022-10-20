@@ -789,7 +789,7 @@ def test_agent_as_a_function_in_laberinth():
 
 
 def test_inOutLaberinth():
-    lb1 = InOut_Simple_Laberinth(15, plot_run='every epoch', exit_at_border=True)
+    lb1 = InOut_Simple_Laberinth(9, plot_run='every epoch', exit_at_border=True)
 
     x = 1
     # lb1.create_agent('do nothing', do_nothing)
@@ -976,8 +976,8 @@ if __name__ == '__main__':
         # np.random.set_state(state)
         # print("Seed: ", np.random.get_state())
 
-        # test_inOutLaberinth()
-        test_inOutLaberinth_complex()
+        test_inOutLaberinth()
+        # test_inOutLaberinth_complex()
         # test_200inOutLaberingth()
 
         # test_agent_as_a_function_in_treasure()

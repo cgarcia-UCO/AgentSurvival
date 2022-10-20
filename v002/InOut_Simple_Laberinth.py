@@ -22,6 +22,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
     class _Exit(Enviroment_with_agents._Object):
         def __init__(self, pos_x, pos_y, environment):
             super().__init__(pos_x, pos_y, environment)
+            self.__my_avatar = pl.imread("images/exit_image.jpg") # https://www.rawpixel.com/image/5917811/exit-sign-free-public-domain-cc0-photo
 
         def _exit(self, agent):
             hiden_agent = self._environment._Enviroment_with_agents__get_hidden_agent(agent, self)
@@ -35,7 +36,10 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
                                            'Description': 'You exited from the laberinth'})
 
         def plot(self):
-            pl.plot(self._pos_x + 0.5, self._pos_y + 0.5, 'ro') #punto rojo
+            # pl.plot(self._pos_x + 0.5, self._pos_y + 0.5, 'ro') #punto rojo
+            pl.gca().imshow(self.__my_avatar,
+                            extent=[self._pos_x + 0.1, self._pos_x + 0.9,
+                                    self._pos_y + 0.1, self._pos_y + 0.9])
 
         def _get_info(self):
             return {'type': 'exit', 'Description': 'This is the exit of the laberinth. '
