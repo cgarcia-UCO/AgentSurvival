@@ -565,6 +565,7 @@ class Enviroment_with_agents(Enviroment):
         super().__init__(size, no_adjacents_in_cluster, show_construction, remove_walls_prob = remove_walls_prob)
             # , entry_at_border,
             #      treasure_at_border)
+        self._first_time = 0
         self.__hidden_agents = {}
         self.__outer_agents = {}
         self.__outer_agent_ids = {}
@@ -781,6 +782,10 @@ class Enviroment_with_agents(Enviroment):
         pl.gca().autoscale();
         if clear:
             self._show_plot(time_interval=time_interval)
+
+        # if self._first_time < 5:
+        #     self._first_time += 1
+        #     input('Pulsa intro para continuar (5 veces)')
 
     def stop_condition(self):
         return len(self.__living_agent_ids) <= 1

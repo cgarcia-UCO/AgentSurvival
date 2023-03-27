@@ -13,6 +13,8 @@ habrá que utilizar alguna de las funciones dentro del diccionario que devuelve 
 habrá que modificar algunas cosas almacenadas en el Laberinto, por lo que dichos objetos tendrán que definirse dentro de 
 dicha clase
 '''
+import sys
+sys.path.insert(1, '.')
 import asyncio
 import datetime
 import sys
@@ -788,6 +790,7 @@ def test_agent_as_a_function_in_laberinth():
     print("\n\nEncontraste la salida en", num_success, "ocasiones de", num_runs)
 
 
+
 def test_inOutLaberinth():
     lb1 = InOut_Simple_Laberinth(9, plot_run='every epoch', exit_at_border=True)
 
@@ -808,10 +811,10 @@ def test_inOutLaberinth():
 
 
 def test_inOutLaberinth_complex():
-    lb1 = InOut_Simple_Laberinth(15, plot_run='every epoch',#'end',#'every epoch',
+    lb1 = InOut_Simple_Laberinth(8, plot_run='every epoch',#'end',#'every epoch',
                                  # move_protection = False,
-                                 remove_walls_prob=0.5,
-                                 exit_at_border=False,#'no exit',
+                                 remove_walls_prob=0.3,
+                                 exit_at_border='no exit',#False,#'no exit',
                                  entry_at_border=False)
 
     x = 1
@@ -836,7 +839,7 @@ def test_emptyLaberinth():
 if __name__ == '__main__':
         #np.random.seed(123456)
 
-        #test_xAgents(8)
+        # test_xAgents(8)
         # test_2000Laberithns()
         # num_wins = {}
         # for _ in range(20):
@@ -976,11 +979,11 @@ if __name__ == '__main__':
         # np.random.set_state(state)
         # print("Seed: ", np.random.get_state())
 
-        test_inOutLaberinth()
+        # test_inOutLaberinth()
         # test_inOutLaberinth_complex()
         # test_200inOutLaberingth()
 
-        # test_agent_as_a_function_in_treasure()
+        test_agent_as_a_function_in_treasure()
         # test_agent_as_a_function_in_laberinth()
 
         # test_emptyLaberinth()
