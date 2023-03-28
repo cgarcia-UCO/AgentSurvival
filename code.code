@@ -1,0 +1,422 @@
+HOLA
+Generation:
+126
+
+Phenotype:
+if not hasattr(self, 'visited'):
+INIT_BLOCK
+self.visited = {'0,0': 1}
+self.direction = [1,0]
+self.current_pos = [0,0]
+END_BLOCK
+
+def move_and_annotate(self):
+INIT_BLOCK
+self.move_forward()
+self.current_pos[0] = self.current_pos[0] + self.direction[0]
+self.current_pos[1] = self.current_pos[1] + self.direction[1]
+current_pos_str = str(self.current_pos[0]) + ',' + str(self.current_pos[1])
+self.visited[current_pos_str] = self.visited.get(current_pos_str, 0) + 1
+END_BLOCK
+
+def new_direction(direction, type_turn):
+INIT_BLOCK
+if type_turn == 'right':
+INIT_BLOCK
+new_direction_0 = (1 - direction[1]) % 3 - 1
+new_direction_1 = (direction[0] + 1) % 3 - 1
+return [new_direction_0, new_direction_1]
+END_BLOCK
+else:
+INIT_BLOCK
+aux_direction = new_direction(direction, 'right')
+aux_direction = new_direction(aux_direction, 'right')
+aux_direction = new_direction(aux_direction, 'right')
+return aux_direction
+END_BLOCK
+END_BLOCK
+
+whats_here = self.whats_here()
+walls = whats_here['walls']
+objects = whats_here['objects']
+for i in objects:
+INIT_BLOCK
+if i['type'] == 'exit':
+INIT_BLOCK
+i['exit_function'](self)
+END_BLOCK
+END_BLOCK
+
+posibilities_times_Visited = {'left': 0, 'right': 0, 'front': 0}
+front_cell_coords = str(self.current_pos[0] + self.direction[0])+','+str(str(self.current_pos[1] + self.direction[1]))
+posibilities_times_Visited['front'] = self.visited.get(front_cell_coords, 0)
+
+right_direction = new_direction(self.direction, 'right')
+right_cell_coords = str(self.current_pos[0] + right_direction[0])+','+str(str(self.current_pos[1] + right_direction[1]))
+posibilities_times_Visited['right'] = self.visited.get(right_cell_coords, 0)
+
+left_direction = new_direction(self.direction, 'left')
+left_cell_coords = str(self.current_pos[0] + left_direction[0])+','+str(str(self.current_pos[1] + left_direction[1]))
+posibilities_times_Visited['left'] = self.visited.get(left_cell_coords, 0)
+if ((not walls['front']) and posibilities_times_Visited['front'] <= posibilities_times_Visited['left']):
+INIT_BLOCK
+if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK
+END_BLOCK
+if ((not walls['right']) and (posibilities_times_Visited['right'] <= posibilities_times_Visited['left'] and (not walls['back']))):
+INIT_BLOCK
+self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return
+END_BLOCK
+if walls['left']:
+INIT_BLOCK
+if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK
+END_BLOCK
+if walls['right']:
+INIT_BLOCK
+self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return
+END_BLOCK
+if (walls['back'] and (not walls['back'])):
+INIT_BLOCK
+if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK
+END_BLOCK
+if posibilities_times_Visited['right'] <= posibilities_times_Visited['left']:
+INIT_BLOCK
+if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK
+END_BLOCK
+if (posibilities_times_Visited['right'] <= posibilities_times_Visited['right'] and posibilities_times_Visited['front'] <= posibilities_times_Visited['front']):
+INIT_BLOCK
+self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return
+END_BLOCK
+if ((not walls['front']) and (walls['front'] and (walls['back'] and walls['back']))):
+INIT_BLOCK
+if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK
+END_BLOCK
+if walls['left']:
+INIT_BLOCK
+if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK
+END_BLOCK
+if (walls['back'] and posibilities_times_Visited['left'] <= posibilities_times_Visited['left']):
+INIT_BLOCK
+self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return
+END_BLOCK
+if (not walls['left']):
+INIT_BLOCK
+self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return
+END_BLOCK
+if (posibilities_times_Visited['right'] <= posibilities_times_Visited['front'] and (not walls['back'])):
+INIT_BLOCK
+if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK
+END_BLOCK
+if posibilities_times_Visited['right'] <= posibilities_times_Visited['right']:
+INIT_BLOCK
+self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return
+END_BLOCK
+if (posibilities_times_Visited['front'] <= posibilities_times_Visited['left'] and (not walls['right'])):
+INIT_BLOCK
+self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return
+END_BLOCK
+if (posibilities_times_Visited['right'] <= posibilities_times_Visited['front'] and walls['left']):
+INIT_BLOCK
+self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return
+END_BLOCK
+if posibilities_times_Visited['front'] <= posibilities_times_Visited['left']:
+INIT_BLOCK
+self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return
+END_BLOCK
+if walls['right']:
+INIT_BLOCK
+self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return
+END_BLOCK
+if (posibilities_times_Visited['right'] <= posibilities_times_Visited['left'] and (walls['back'] and (not walls['left']))):
+INIT_BLOCK
+if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK
+END_BLOCK
+if (not walls['right']):
+INIT_BLOCK
+if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK
+END_BLOCK
+if (walls['back'] and ((not walls['right']) and walls['right'])):
+INIT_BLOCK
+self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return
+END_BLOCK
+if walls['back']:
+INIT_BLOCK
+self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return
+END_BLOCK
+if walls['left']:
+INIT_BLOCK
+self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return
+END_BLOCK
+
+Genotype:
+[29188, 14179, 36714, 7489, 9917, 35395, 89244, 24586, 48678, 26355, 92663, 52531, 56887, 62810, 42365, 72278, 54339, 80351, 14457, 74207, 11605, 92240, 25355, 15734, 41218, 91125, 77296, 42733, 55746, 20181, 91927, 45150, 50652, 781, 15233, 11191, 77546, 94821, 13852, 57613, 37279, 49227, 84585, 50502, 50380, 39385, 70930, 58262, 91631, 42990, 24485, 6271, 27312, 84518, 37279, 1615, 37256, 39298, 48325, 96664, 29813, 20816, 6095, 9226, 37279, 1615, 8554, 73635, 93709, 25488, 87427, 31153, 51468, 14326, 930, 28728, 32534, 84518, 91631, 32958, 96807, 83965, 58262, 35939, 64115, 3267, 9346, 13204, 94178, 19809, 90360, 48517, 11191, 77546, 75520, 57841, 57613, 91927, 81391, 87074, 35848, 58832, 27168, 92782, 49654, 15233, 11191, 77546, 95441, 38689, 45454, 57613, 37279, 1615, 43508, 80618, 81312, 37682, 39061, 18432, 43875, 45137, 44441, 18746, 60889, 74258, 42840, 12726, 4541, 50052, 84387, 38222, 13298, 66929, 70248, 21855, 37279, 74834, 92292, 81852, 4713, 37279, 1615, 43508, 34141, 88314, 93709, 25488, 32534, 96290, 69604, 70753, 42065, 91631, 2342, 50668, 65160, 84518, 35939, 64115, 3267, 9346, 95935, 85840, 12876, 42672, 55653, 35924, 48517, 33717, 6318, 61566, 32534, 2419, 23842, 634, 28194, 11777, 93774, 22586, 93861, 72058, 10577, 27600]
+Tree:
+(<program> if not hasattr(self, 'visited'):
+INIT_BLOCK
+self.visited = {'0,0': 1}
+self.direction = [1,0]
+self.current_pos = [0,0]
+END_BLOCK
+
+def move_and_annotate(self):
+INIT_BLOCK
+self.move_forward()
+self.current_pos[0] = self.current_pos[0] + self.direction[0]
+self.current_pos[1] = self.current_pos[1] + self.direction[1]
+current_pos_str = str(self.current_pos[0]) + ',' + str(self.current_pos[1])
+self.visited[current_pos_str] = self.visited.get(current_pos_str, 0) + 1
+END_BLOCK
+
+def new_direction(direction, type_turn):
+INIT_BLOCK
+if type_turn == 'right':
+INIT_BLOCK
+new_direction_0 =  (<expr_direction> ( (<direction_operand> 1)   (<op> -)   (<direction_operand> direction[1]) ) % 3 - 1)
+new_direction_1 =  (<expr_direction> ( (<direction_operand> direction[0])   (<op> +)   (<direction_operand> 1) ) % 3 - 1)
+return [new_direction_0, new_direction_1]
+END_BLOCK
+else:
+INIT_BLOCK
+aux_direction = new_direction(direction, 'right')
+aux_direction = new_direction(aux_direction, 'right')
+aux_direction = new_direction(aux_direction, 'right')
+return aux_direction
+END_BLOCK
+END_BLOCK
+
+whats_here = self.whats_here()
+walls = whats_here['walls']
+objects = whats_here['objects']
+for i in objects:
+INIT_BLOCK
+if i['type'] == 'exit':
+INIT_BLOCK
+i['exit_function'](self)
+END_BLOCK
+END_BLOCK
+
+posibilities_times_Visited = {'left': 0, 'right': 0, 'front': 0}
+front_cell_coords = str(self.current_pos[0] + self.direction[0])+','+str(str(self.current_pos[1] + self.direction[1]))
+posibilities_times_Visited['front'] = self.visited.get(front_cell_coords, 0)
+
+right_direction = new_direction(self.direction, 'right')
+right_cell_coords = str(self.current_pos[0] + right_direction[0])+','+str(str(self.current_pos[1] + right_direction[1]))
+posibilities_times_Visited['right'] = self.visited.get(right_cell_coords, 0)
+
+left_direction = new_direction(self.direction, 'left')
+left_cell_coords = str(self.current_pos[0] + left_direction[0])+','+str(str(self.current_pos[1] + left_direction[1]))
+posibilities_times_Visited['left'] = self.visited.get(left_cell_coords, 0)
+ (<instructions> if  (<condition> ( (<single_condition> (not  (<walls_condition> walls['front']) ))  and  (<condition> (<single_condition> (<times_visited_operand> posibilities_times_Visited['front'])  <=  (<times_visited_operand> posibilities_times_Visited['left']))) )) :
+INIT_BLOCK
+ (<simple_instruction> if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK)
+END_BLOCK
+ (<instructions> if  (<condition> ( (<single_condition> (not  (<walls_condition> walls['right']) ))  and  (<condition> ( (<single_condition> (<times_visited_operand> posibilities_times_Visited['right'])  <=  (<times_visited_operand> posibilities_times_Visited['left']))  and  (<condition> (<single_condition> (not  (<walls_condition> walls['back']) ))) )) )) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> (<single_condition> (<walls_condition> walls['left']))) :
+INIT_BLOCK
+ (<simple_instruction> if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK)
+END_BLOCK
+ (<instructions> if  (<condition> (<single_condition> (<walls_condition> walls['right']))) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> ( (<single_condition> (<walls_condition> walls['back']))  and  (<condition> (<single_condition> (not  (<walls_condition> walls['back']) ))) )) :
+INIT_BLOCK
+ (<simple_instruction> if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK)
+END_BLOCK
+ (<instructions> if  (<condition> (<single_condition> (<times_visited_operand> posibilities_times_Visited['right'])  <=  (<times_visited_operand> posibilities_times_Visited['left']))) :
+INIT_BLOCK
+ (<simple_instruction> if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK)
+END_BLOCK
+ (<instructions> if  (<condition> ( (<single_condition> (<times_visited_operand> posibilities_times_Visited['right'])  <=  (<times_visited_operand> posibilities_times_Visited['right']))  and  (<condition> (<single_condition> (<times_visited_operand> posibilities_times_Visited['front'])  <=  (<times_visited_operand> posibilities_times_Visited['front']))) )) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> ( (<single_condition> (not  (<walls_condition> walls['front']) ))  and  (<condition> ( (<single_condition> (<walls_condition> walls['front']))  and  (<condition> ( (<single_condition> (<walls_condition> walls['back']))  and  (<condition> (<single_condition> (<walls_condition> walls['back']))) )) )) )) :
+INIT_BLOCK
+ (<simple_instruction> if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK)
+END_BLOCK
+ (<instructions> if  (<condition> (<single_condition> (<walls_condition> walls['left']))) :
+INIT_BLOCK
+ (<simple_instruction> if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK)
+END_BLOCK
+ (<instructions> if  (<condition> ( (<single_condition> (<walls_condition> walls['back']))  and  (<condition> (<single_condition> (<times_visited_operand> posibilities_times_Visited['left'])  <=  (<times_visited_operand> posibilities_times_Visited['left']))) )) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> (<single_condition> (not  (<walls_condition> walls['left']) ))) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> ( (<single_condition> (<times_visited_operand> posibilities_times_Visited['right'])  <=  (<times_visited_operand> posibilities_times_Visited['front']))  and  (<condition> (<single_condition> (not  (<walls_condition> walls['back']) ))) )) :
+INIT_BLOCK
+ (<simple_instruction> if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK)
+END_BLOCK
+ (<instructions> if  (<condition> (<single_condition> (<times_visited_operand> posibilities_times_Visited['right'])  <=  (<times_visited_operand> posibilities_times_Visited['right']))) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> ( (<single_condition> (<times_visited_operand> posibilities_times_Visited['front'])  <=  (<times_visited_operand> posibilities_times_Visited['left']))  and  (<condition> (<single_condition> (not  (<walls_condition> walls['right']) ))) )) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> ( (<single_condition> (<times_visited_operand> posibilities_times_Visited['right'])  <=  (<times_visited_operand> posibilities_times_Visited['front']))  and  (<condition> (<single_condition> (<walls_condition> walls['left']))) )) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> (<single_condition> (<times_visited_operand> posibilities_times_Visited['front'])  <=  (<times_visited_operand> posibilities_times_Visited['left']))) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> (<single_condition> (<walls_condition> walls['right']))) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> ( (<single_condition> (<times_visited_operand> posibilities_times_Visited['right'])  <=  (<times_visited_operand> posibilities_times_Visited['left']))  and  (<condition> ( (<single_condition> (<walls_condition> walls['back']))  and  (<condition> (<single_condition> (not  (<walls_condition> walls['left']) ))) )) )) :
+INIT_BLOCK
+ (<simple_instruction> if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK)
+END_BLOCK
+ (<instructions> if  (<condition> (<single_condition> (not  (<walls_condition> walls['right']) ))) :
+INIT_BLOCK
+ (<simple_instruction> if not walls['front']:
+INIT_BLOCK
+move_and_annotate(self)
+return
+END_BLOCK)
+END_BLOCK
+ (<instructions> if  (<condition> ( (<single_condition> (<walls_condition> walls['back']))  and  (<condition> ( (<single_condition> (not  (<walls_condition> walls['right']) ))  and  (<condition> (<single_condition> (<walls_condition> walls['right']))) )) )) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> (<single_condition> (<walls_condition> walls['back']))) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_left()
+self.direction = new_direction(self.direction, 'left')
+return)
+END_BLOCK
+ (<instructions> if  (<condition> (<single_condition> (<walls_condition> walls['left']))) :
+INIT_BLOCK
+ (<simple_instruction> self.turn_right()
+self.direction = new_direction(self.direction, 'right')
+return)
+END_BLOCK)))))))))))))))))))))))
+
+Fitness:
+500
