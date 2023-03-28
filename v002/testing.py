@@ -979,11 +979,11 @@ if __name__ == '__main__':
         # np.random.set_state(state)
         # print("Seed: ", np.random.get_state())
 
-        # test_inOutLaberinth()
+        test_inOutLaberinth()
         # test_inOutLaberinth_complex()
         # test_200inOutLaberingth()
 
-        test_agent_as_a_function_in_treasure()
+        # test_agent_as_a_function_in_treasure()
         # test_agent_as_a_function_in_laberinth()
 
         # test_emptyLaberinth()
