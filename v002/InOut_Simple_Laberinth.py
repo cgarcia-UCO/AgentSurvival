@@ -1,3 +1,5 @@
+from os import path
+
 from matplotlib import pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -22,7 +24,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
     class _Exit(Enviroment_with_agents._Object):
         def __init__(self, pos_x, pos_y, environment):
             super().__init__(pos_x, pos_y, environment)
-            self.__my_avatar = pl.imread("images/exit_image.jpg") # https://www.rawpixel.com/image/5917811/exit-sign-free-public-domain-cc0-photo
+            self.__my_avatar = pl.imread(path.join("images","exit_image.jpg")) # https://www.rawpixel.com/image/5917811/exit-sign-free-public-domain-cc0-photo
 
         def _exit(self, agent):
             hiden_agent = self._environment._Enviroment_with_agents__get_hidden_agent(agent, self)
@@ -53,7 +55,7 @@ class InOut_Simple_Laberinth(Enviroment_with_agents):
     class _Treasure(_Exit):
         def __init__(self, pos_x, pos_y, environment):
             super().__init__(pos_x, pos_y, environment)
-            self.__my_avatar = pl.imread("images/chest.png")
+            self.__my_avatar = pl.imread(path.join("images","chest.png"))
 
         def plot(self):
             # https://www.rawpixel.com/image/7371573
